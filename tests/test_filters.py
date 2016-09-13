@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from dmutils.filters import markdown_filter, smartjoin, format_links
+from dmutils.filters import markdown_filter, smartjoin, format_links, timesince
+from datetime import datetime, timedelta
 
 
 def test_markdown_filter_produces_markup():
@@ -95,3 +96,59 @@ def test_multiple_urls():
 def test_no_links_no_change():
     text = 'There are no Greek Γ Δ Ε Ζ Η Θ Ι Κ Λ links.'
     assert format_links(text) == text
+
+
+def test_timesince():
+    now = datetime.utcnow()
+    times = [
+        now,
+
+        now - timedelta(seconds=1),
+        now - timedelta(seconds=2),
+
+        now - timedelta(minutes=1),
+        now - timedelta(minutes=2),
+
+        now - timedelta(hours=1),
+        now - timedelta(hours=2),
+
+        now - timedelta(days=1),
+        now - timedelta(days=2),
+
+        now - timedelta(days=7),
+        now - timedelta(days=14),
+
+        now - timedelta(days=30),
+        now - timedelta(days=60),
+
+        now - timedelta(days=365),
+        now - timedelta(days=365*2),
+    ]
+
+    texts = [
+        'just now',
+
+        '1 second ago',
+        '2 seconds ago',
+
+        '1 minute ago',
+        '2 minutes ago',
+
+        '1 hour ago',
+        '2 hours ago',
+
+        '1 day ago',
+        '2 days ago',
+
+        '1 week ago',
+        '2 weeks ago',
+
+        '1 month ago',
+        '2 months ago',
+
+        '1 year ago',
+        '2 years ago',
+    ]
+
+    for i, time in enumerate(times):
+        assert timesince(time) == texts[i]
