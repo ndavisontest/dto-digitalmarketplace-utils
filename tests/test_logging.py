@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 import tempfile
 import logging
+import mock
+from requests import Response
 try:
     from StringIO import StringIO
 except ImportError:
@@ -8,8 +10,11 @@ except ImportError:
 import json
 
 from dmutils import request_id
+from dmutils.email import EmailError
 from dmutils.logging import init_app, RequestIdFilter, JSONFormatter, CustomLogFormatter
-from dmutils.logging import LOG_FORMAT, TIME_FORMAT
+from dmutils.logging import LOG_FORMAT, TIME_FORMAT, slack_escape, notify_team
+
+from tests.helpers import BaseApplicationTest, Config
 
 
 def test_request_id_filter_not_in_app_context():
@@ -144,3 +149,61 @@ class TestCustomLogFormatter(object):
         result = self.dmbuffer.getvalue()
 
         assert 'failed to format log message' in result
+
+
+def test_slack_escape():
+    assert slack_escape('') == ''
+    assert slack_escape('1 < 2') == '1 &lt; 2'
+    assert slack_escape('1 > 2') == '1 &gt; 2'
+    assert slack_escape('1 & 2') == '1 &amp; 2'
+    assert slack_escape('<> <&>') == '&lt;&gt; &lt;&amp;&gt;'
+
+
+class NotifyTeamConfig(Config):
+    DM_TEAM_SLACK_WEBHOOK = 'https://example.com/webhook'
+    DM_TEAM_EMAIL = 'team@example.com'
+    DM_GENERIC_NOREPLY_EMAIL = 'no-reply@example.com'
+    DM_GENERIC_ADMIN_NAME = 'Marketplace Admin'
+
+
+class TestNotifyTeam(BaseApplicationTest):
+
+    config = NotifyTeamConfig()
+
+    @mock.patch('dmutils.logging.send_email')
+    @mock.patch('dmutils.logging.requests')
+    def test_notify(self, requests, send_email):
+        with self.flask.app_context():
+            slack_response = Response()
+            slack_response.status_code = 200
+            requests.post.return_value = slack_response
+            notify_team('Something Happened', 'It happened', 'https://example.com/it')
+
+            requests.post.assert_called_with(
+                self.config.DM_TEAM_SLACK_WEBHOOK,
+                json=mock.ANY,
+            )
+
+            send_email.assert_called_once_with(
+                self.config.DM_TEAM_EMAIL,
+                mock.ANY,
+                'Something Happened',
+                self.config.DM_GENERIC_NOREPLY_EMAIL,
+                self.config.DM_GENERIC_ADMIN_NAME,
+            )
+
+    @mock.patch('dmutils.logging.send_email')
+    @mock.patch('dmutils.logging.requests')
+    def test_slack_error_path(self, requests, send_email):
+        with self.flask.app_context():
+            error_response = Response()
+            error_response.status_code = 400
+            requests.post.return_value = error_response
+            notify_team('Something Happened', 'It happened', 'https://example.com/it')
+
+    @mock.patch('dmutils.logging.send_email')
+    @mock.patch('dmutils.logging.requests')
+    def test_email_error_path(self, requests, send_email):
+        with self.flask.app_context():
+            send_email.side_effect = EmailError(':(')
+            notify_team('Something Happened', 'It happened', 'https://example.com/it')

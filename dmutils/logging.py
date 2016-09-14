@@ -1,11 +1,15 @@
 from __future__ import absolute_import
+import json
 import logging
 import sys
 import re
 from itertools import product
+import requests
 
-from flask import request, current_app
+from flask import request, current_app, render_template_string
 from flask.ctx import has_request_context
+
+from dmutils.email import send_email, EmailError
 
 from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
 
@@ -137,3 +141,58 @@ class JSONFormatter(BaseJSONFormatter):
         except KeyError as e:
             logger.exception("failed to format log message: {} not found".format(e))
         return log_record
+
+
+def slack_escape(text):
+    """
+    Escapes special characters for Slack API.
+
+    https://api.slack.com/docs/message-formatting#how_to_escape_characters
+    """
+    text = text.replace('&', '&amp;')
+    text = text.replace('<', '&lt;')
+    text = text.replace('>', '&gt;')
+    return text
+
+
+def notify_team(subject, body, more_info_url=None):
+    """
+    Generic routine for making simple notifications to the Marketplace team.
+
+    Notification messages should be very simple so that they're compatible with a variety of backends.
+    """
+    if current_app.config['DM_TEAM_SLACK_WEBHOOK']:
+        slack_body = slack_escape(body)
+        if more_info_url:
+            slack_body += '\n' + more_info_url
+        data = {
+            'attachments': [{
+                'title': subject,
+                'text': slack_body,
+                'fallback': '{} - {} {}'.format(subject, body, more_info_url),
+            }],
+            'username': 'Marketplace Notifications',
+        }
+        response = requests.post(
+            current_app.config['DM_TEAM_SLACK_WEBHOOK'],
+            json=data
+        )
+        if response.status_code != 200:
+            msg = 'Failed to send notification to Slack channel: {} - {}'.format(response.status_code, response.text)
+            current_app.logger.error(msg)
+
+    if current_app.config['DM_TEAM_EMAIL']:
+        email_body = render_template_string(
+            '<p>{{ body }}</p>{% if more_info_url %}<a href="{{ more_info_url }}">More info</a>{% endif %}',
+            body=body, more_info_url=more_info_url
+        )
+        try:
+            send_email(
+                current_app.config['DM_TEAM_EMAIL'],
+                email_body,
+                subject,
+                current_app.config['DM_GENERIC_NOREPLY_EMAIL'],
+                current_app.config['DM_GENERIC_ADMIN_NAME'],
+            )
+        except EmailError as e:
+            current_app.logger.error('Failed to send notification email: {}'.format(e.message))
