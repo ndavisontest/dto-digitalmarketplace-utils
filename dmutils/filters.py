@@ -48,14 +48,15 @@ def format_links(text):
         return text
 
 
-def timesince(dt, default="just now"):
+def timesince(before, now=None, default="just now"):
     """
     Returns string representing "time since" e.g.
     3 days ago, 5 hours ago etc.
     """
 
-    now = datetime.utcnow()
-    diff = now - dt
+    if not now:
+        now = datetime.utcnow()
+    diff = now - before
 
     periods = (
         (diff.days / 365, "year", "years"),

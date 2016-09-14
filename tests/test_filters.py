@@ -151,4 +151,4 @@ def test_timesince():
     ]
 
     for i, time in enumerate(times):
-        assert timesince(time) == texts[i]
+        assert timesince(time, now) == texts[i]
