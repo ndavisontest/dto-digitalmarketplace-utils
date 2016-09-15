@@ -161,7 +161,7 @@ def notify_team(subject, body, more_info_url=None):
 
     Notification messages should be very simple so that they're compatible with a variety of backends.
     """
-    if 'DM_TEAM_SLACK_WEBHOOK' in current_app.config:
+    if current_app.config.get('DM_TEAM_SLACK_WEBHOOK', None):
         slack_body = slack_escape(body)
         if more_info_url:
             slack_body += '\n' + more_info_url
@@ -181,7 +181,7 @@ def notify_team(subject, body, more_info_url=None):
             msg = 'Failed to send notification to Slack channel: {} - {}'.format(response.status_code, response.text)
             current_app.logger.error(msg)
 
-    if 'DM_TEAM_EMAIL' in current_app.config:
+    if current_app.config.get('DM_TEAM_EMAIL', None):
         email_body = render_template_string(
             '<p>{{ body }}</p>{% if more_info_url %}<a href="{{ more_info_url }}">More info</a>{% endif %}',
             body=body, more_info_url=more_info_url
