@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import mock
 import pytest
 from dmutils.user import user_has_role, user_logging_string, User
@@ -5,7 +7,7 @@ from dmutils.user import user_has_role, user_logging_string, User
 
 @pytest.fixture
 def user():
-    return User(123, 'test@example.com', 321, 'test supplier', False, True, "Name", 'supplier')
+    return User(123, 'test@example.com', 321, 'test supplier', False, True, 'Name', 'supplier', datetime(2016, 01, 01))
 
 
 @pytest.fixture
@@ -21,7 +23,8 @@ def user_json():
             "supplier": {
                 "supplierCode": 321,
                 "name": "test supplier",
-            }
+            },
+            "termsAcceptedAt": "2016-01-01T01:00:00.0Z",
         }
     }
 
@@ -57,6 +60,7 @@ def test_User_from_json():
         'active': True,
         'name': 'Name',
         'role': 'admin',
+        'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
     }})
 
     assert user.id == 123
@@ -78,7 +82,8 @@ def test_User_from_json_with_supplier():
         'supplier': {
             'supplierCode': 321,
             'name': 'test supplier',
-        }
+        },
+        'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
     }})
     assert user.id == 123
     assert user.name == 'Name'
