@@ -1,5 +1,9 @@
+from datetime import datetime
 import hashlib
 import base64
+import pytz
+
+from dmutils.formats import DATETIME_FORMAT
 
 
 def hash_email(email):
@@ -24,7 +28,7 @@ def user_has_role(user, role):
 
 class User():
     def __init__(self, user_id, email_address, supplier_code, supplier_name,
-                 locked, active, name, role):
+                 locked, active, name, role, terms_accepted_at):
         self.id = user_id
         self.email_address = email_address
         self.name = name
@@ -33,6 +37,7 @@ class User():
         self.supplier_name = supplier_name
         self.locked = locked
         self.active = active
+        self.terms_accepted_at = terms_accepted_at
 
     @property
     def is_authenticated(self):
@@ -77,6 +82,8 @@ class User():
         user = user_json["users"]
         supplier_code = None
         supplier_name = None
+        terms_accepted_at = datetime.strptime(user['termsAcceptedAt'], DATETIME_FORMAT)
+        terms_accepted_at = terms_accepted_at.replace(tzinfo=pytz.timezone('UTC'))
         if "supplier" in user:
             supplier_code = user["supplier"]["supplierCode"]
             supplier_name = user["supplier"]["name"]
@@ -88,7 +95,8 @@ class User():
             locked=user.get('locked', False),
             active=user.get('active', True),
             name=user['name'],
-            role=user['role']
+            role=user['role'],
+            terms_accepted_at=terms_accepted_at
         )
 
     @staticmethod
