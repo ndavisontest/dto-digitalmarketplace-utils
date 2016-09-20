@@ -1,4 +1,6 @@
 import os
+
+import flask_featureflags
 from flask_featureflags.contrib.inline import InlineFeatureFlag
 from . import config, logging, proxy_fix, request_id, formats, filters
 from flask import Markup, redirect, request, session
@@ -31,17 +33,20 @@ def init_app(
     proxy_fix.init_app(application)
     request_id.init_app(application)
 
+    if feature_flags:
+        # Standardize FeatureFlags, only accept inline config variables
+        feature_flags.init_app(application)
+        feature_flags.clear_handlers()
+        feature_flags.add_handler(InlineFeatureFlag())
+    else:
+        flask_featureflags.FeatureFlag(application)
+
     if bootstrap:
         bootstrap.init_app(application)
     if data_api_client:
         data_api_client.init_app(application)
     if db:
         db.init_app(application)
-    if feature_flags:
-        # Standardize FeatureFlags, only accept inline config variables
-        feature_flags.init_app(application)
-        feature_flags.clear_handlers()
-        feature_flags.add_handler(InlineFeatureFlag())
     if login_manager:
         login_manager.init_app(application)
     if search_api_client:

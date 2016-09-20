@@ -1,4 +1,5 @@
-from flask.ext.cache import Cache
+import flask_featureflags
+from flask_cache import Cache
 
 from dmutils.flask_init import pluralize, init_app, init_frontend_app, init_manager
 from helpers import BaseApplicationTest, Config
@@ -41,3 +42,18 @@ class TestInitManager(BaseApplicationTest):
 
     def test_init_manager(self):
         manager = init_manager(self.flask, 5000, [])
+
+
+class TestFeatureFlags(BaseApplicationTest):
+
+    def setup(self):
+        self.config.FEATURE_FLAGS = {
+            'YES': True,
+            'NO': False,
+        }
+        super(TestFeatureFlags, self).setup()
+
+    def test_flags(self):
+        with self.flask.app_context():
+            assert flask_featureflags.is_active('YES')
+            assert not flask_featureflags.is_active('NO')
