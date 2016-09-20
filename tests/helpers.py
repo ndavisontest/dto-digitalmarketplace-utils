@@ -30,6 +30,8 @@ class Config(object):
     DM_CACHE_TYPE = 'dev'
     SECRET_KEY = 'secret'
     ASSET_PATH = '/static'
+    DM_HTTP_PROTO = 'http'
+    URL_PREFIX = ''
 
 
 class BaseApplicationTest(object):
@@ -39,7 +41,11 @@ class BaseApplicationTest(object):
     cache = None
 
     def setup(self):
-        self.flask = Flask('test_app', template_folder='tests/templates/')
+        self.flask = Flask(
+            'test_app',
+            template_folder='tests/templates/',
+            static_url_path=self.config.ASSET_PATH
+        )
         self.login_manager = LoginManager()
         init_app(
             self.flask,
