@@ -9,6 +9,7 @@ from flask import session, redirect, request
 
 NEEDS_UPDATE_SESSION_VAR = 'terms_update'
 REVIEW_URL = '/terms-updated'
+TERMS_URL = '/terms-of-use'
 
 
 def init_app(application):
@@ -16,7 +17,8 @@ def init_app(application):
 
     @application.before_request
     def redirect_for_update():
-        if needs_acceptance_update() and request.path != REVIEW_URL and not request.path.startswith(static_path):
+        if needs_acceptance_update() and request.path not in (REVIEW_URL, TERMS_URL) \
+           and not request.path.startswith(static_path):
             return redirect(REVIEW_URL, code=302)
 
 
