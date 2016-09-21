@@ -20,6 +20,10 @@ class TestTerms(BaseApplicationTest):
             terms_of_use.set_session_flag(False)
             return 'Here are the new terms of use'
 
+        @self.flask.route(terms_of_use.TERMS_URL)
+        def terms():
+            return 'Terms terms terms'
+
         @self.flask.route('/some-page')
         def some_page():
             return 'Interesting content'
@@ -50,6 +54,13 @@ class TestTerms(BaseApplicationTest):
         assert res.status_code == 200
 
         res = self.app.get(terms_of_use.REVIEW_URL)
+        assert res.status_code == 200
+
+    def test_viewing_terms(self):
+        res = self.app.get('/set-flag')
+        assert res.status_code == 200
+
+        res = self.app.get(terms_of_use.TERMS_URL)
         assert res.status_code == 200
 
     def test_viewing_static_assets(self):
