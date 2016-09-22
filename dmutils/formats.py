@@ -33,36 +33,29 @@ LOTS = [
 ]
 
 
-def timeformat(value, default_value=None):
-    return _format_date(value, default_value, DISPLAY_TIME_FORMAT)
+class DateFormatter(object):
 
+    def __init__(self, tz_name='UTC'):
+        self.timezone = pytz.timezone(tz_name)
 
-def shortdateformat(value, default_value=None):
-    return _format_date(value, default_value, DISPLAY_SHORT_DATE_FORMAT, localize=False)
+    def _format(self, value, fmt):
+        if not isinstance(value, datetime):
+            value = datetime.strptime(value, DATETIME_FORMAT)
+        if value.tzinfo is None:
+            value = pytz.utc.localize(value)
+        return value.astimezone(self.timezone).strftime(fmt)
 
+    def timeformat(self, value):
+        return self._format(value, DISPLAY_TIME_FORMAT)
 
-def dateformat(value, default_value=None):
-    return _format_date(value, default_value, DISPLAY_DATE_FORMAT, localize=False)
+    def shortdateformat(self, value):
+        return self._format(value, DISPLAY_SHORT_DATE_FORMAT)
 
+    def dateformat(self, value):
+        return self._format(value, DISPLAY_DATE_FORMAT)
 
-def datetimeformat(value, default_value=None):
-    return _format_date(value, default_value, DISPLAY_DATETIME_FORMAT)
-
-
-EUROPE_LONDON = pytz.timezone("Europe/London")
-
-
-def _format_date(value, default_value, fmt, localize=True):
-    if not value:
-        return default_value
-    if not isinstance(value, datetime):
-        value = datetime.strptime(value, DATETIME_FORMAT)
-    if value.tzinfo is None:
-        value = pytz.utc.localize(value)
-    if localize:
-        return value.astimezone(EUROPE_LONDON).strftime(fmt)
-    else:
-        return value.strftime(fmt)
+    def datetimeformat(self, value):
+        return self._format(value, DISPLAY_DATETIME_FORMAT)
 
 
 def lot_to_lot_case(lot_to_check):
