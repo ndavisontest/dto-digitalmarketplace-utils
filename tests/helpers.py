@@ -32,6 +32,7 @@ class Config(object):
     ASSET_PATH = '/static'
     DM_HTTP_PROTO = 'http'
     URL_PREFIX = ''
+    DM_TIMEZONE = 'Australia/Sydney'
 
 
 class BaseApplicationTest(object):

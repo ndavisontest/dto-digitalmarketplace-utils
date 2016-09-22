@@ -148,11 +148,13 @@ def init_frontend_app(application, data_api_client, login_manager):
     def markdown_filter_flask(data):
         return Markup(filters.markdown_filter(data))
     application.add_template_filter(filters.format_links)
-    application.add_template_filter(formats.timeformat)
-    application.add_template_filter(formats.shortdateformat)
-    application.add_template_filter(formats.dateformat)
-    application.add_template_filter(formats.datetimeformat)
     application.add_template_filter(filters.smartjoin)
+
+    date_formatter = formats.DateFormatter(application.config['DM_TIMEZONE'])
+    application.add_template_filter(date_formatter.timeformat)
+    application.add_template_filter(date_formatter.shortdateformat)
+    application.add_template_filter(date_formatter.dateformat)
+    application.add_template_filter(date_formatter.datetimeformat)
 
 
 def pluralize(count, singular, plural):

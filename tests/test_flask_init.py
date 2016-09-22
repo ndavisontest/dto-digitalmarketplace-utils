@@ -1,3 +1,4 @@
+from flask import render_template_string
 import flask_featureflags
 from flask_cache import Cache
 
@@ -57,3 +58,32 @@ class TestFeatureFlags(BaseApplicationTest):
         with self.flask.app_context():
             assert flask_featureflags.is_active('YES')
             assert not flask_featureflags.is_active('NO')
+
+
+class TestTemplateFilters(BaseApplicationTest):
+
+    # formats themselves are tested in test_formats
+
+    def test_timeformat(self):
+        with self.flask.app_context():
+            template = '{{ "2000-01-01T00:00:00.000000Z"|timeformat }}'
+            result = render_template_string(template)
+            assert result.strip()
+
+    def test_shortdateformat(self):
+        with self.flask.app_context():
+            template = '{{ "2000-01-01T00:00:00.000000Z"|shortdateformat }}'
+            result = render_template_string(template)
+            assert result.strip()
+
+    def test_dateformat(self):
+        with self.flask.app_context():
+            template = '{{ "2000-01-01T00:00:00.000000Z"|dateformat }}'
+            result = render_template_string(template)
+            assert result.strip()
+
+    def test_datetimeformat(self):
+        with self.flask.app_context():
+            template = '{{ "2000-01-01T00:00:00.000000Z"|datetimeformat }}'
+            result = render_template_string(template)
+            assert result.strip()
