@@ -2,7 +2,7 @@ import os
 
 import flask_featureflags
 from flask_featureflags.contrib.inline import InlineFeatureFlag
-from . import config, logging, proxy_fix, request_id, formats, filters
+from . import config, logging, force_https, proxy_fix, request_id, formats, filters
 from flask import Markup, redirect, request, session
 from flask.ext.script import Manager, Server
 from flask_login import current_user
@@ -35,6 +35,7 @@ def init_app(
     logging.init_app(application)
     proxy_fix.init_app(application)
     request_id.init_app(application)
+    force_https.init_app(application)
 
     if feature_flags:
         # Standardize FeatureFlags, only accept inline config variables
