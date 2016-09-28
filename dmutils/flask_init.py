@@ -11,6 +11,7 @@ from asset_fingerprint import AssetFingerprinter
 from user import User, user_logging_string
 
 from dmutils import terms_of_use
+from dmutils.forms import valid_csrf_or_abort
 
 
 def init_app(
@@ -96,6 +97,11 @@ def init_frontend_app(application, data_api_client, login_manager):
     @login_manager.user_loader
     def load_user(user_id):
         return User.load_user(data_api_client, user_id)
+
+    @application.before_request
+    def check_csrf_token():
+        if request.method in ('POST', 'PATCH', 'PUT', 'DELETE'):
+            valid_csrf_or_abort()
 
     @application.before_request
     def refresh_session():
