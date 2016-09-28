@@ -1,4 +1,5 @@
 import os
+import jinja2
 
 import flask_featureflags
 from flask_featureflags.contrib.inline import InlineFeatureFlag
@@ -78,7 +79,8 @@ def init_app(
         return response
 
 
-def init_frontend_app(application, data_api_client, login_manager):
+def init_frontend_app(application, data_api_client, login_manager, template_dirs=['app/templates']):
+    application.jinja_loader = jinja2.FileSystemLoader(template_dirs)
 
     def request_log_handler(response):
         params = {
