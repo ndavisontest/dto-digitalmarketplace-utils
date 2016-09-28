@@ -3,6 +3,7 @@ import flask_featureflags
 from flask_cache import Cache
 
 from dmutils.flask_init import pluralize, init_app, init_frontend_app, init_manager
+from dmutils.forms import FakeCsrf
 from helpers import BaseApplicationTest, Config
 
 import pytest
@@ -58,6 +59,34 @@ class TestFeatureFlags(BaseApplicationTest):
         with self.flask.app_context():
             assert flask_featureflags.is_active('YES')
             assert not flask_featureflags.is_active('NO')
+
+
+class TestCsrf(BaseApplicationTest):
+
+    def setup(self):
+        super(TestCsrf, self).setup()
+
+        @self.flask.route('/thing', methods=['POST'])
+        def post_endpoint():
+            return 'done'
+
+    def test_csrf_okay(self):
+        res = self.app.post(
+            '/thing',
+            data={'csrf_token': FakeCsrf.valid_token},
+        )
+        assert res.status_code == 200
+
+    def test_csrf_missing(self):
+        res = self.app.post('/thing')
+        assert res.status_code == 400
+
+    def test_csrf_wrong(self):
+        res = self.app.post(
+            '/thing',
+            data={'csrf_token': 'nope'},
+        )
+        assert res.status_code == 400
 
 
 class TestTemplateFilters(BaseApplicationTest):
