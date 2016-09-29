@@ -7,17 +7,13 @@ class TestForceHTTPSConfig(Config):
     DM_HTTP_PROTO = "HTTPS"
 
 
-class TestForceHTTPS(object):
+class TestForceHTTPS(BaseApplicationTest):
     config_object = TestForceHTTPSConfig()
 
+    config = TestForceHTTPSConfig()
+
     def setup(self):
-        self.flask = Flask(
-            'test_app'
-        )
-        self.flask.config.from_object(self.config_object)
-        config.init_app(self.flask)
-        force_https.init_app(self.flask)
-        self.app = self.flask.test_client()
+        super(TestForceHTTPS, self).setup()
 
         @self.flask.route('/some-page')
         def some_page():
