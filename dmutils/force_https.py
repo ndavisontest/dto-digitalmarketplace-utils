@@ -42,6 +42,6 @@ def redirect_to_ssl():
 def set_hsts_header(response):
     """Adds HSTS header to each response."""
     # Should we add STS header?
-    if request.is_secure:
+    if request.url.startswith('https://'):
         response.headers.setdefault('Strict-Transport-Security', 'max-age=86400')  # 1 day in seconds
     return response

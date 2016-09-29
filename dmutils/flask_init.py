@@ -7,6 +7,7 @@ from . import config, logging, force_https, proxy_fix, request_id, formats, filt
 from flask import Markup, redirect, request, session
 from flask.ext.script import Manager, Server
 from flask_login import current_user
+from werkzeug.contrib.fixers import ProxyFix
 
 from asset_fingerprint import AssetFingerprinter
 from user import User, user_logging_string
@@ -34,7 +35,7 @@ def init_app(
     # all belong to dmutils
     config.init_app(application)
     logging.init_app(application)
-    proxy_fix.init_app(application)
+    ProxyFix(application)
     request_id.init_app(application)
     force_https.init_app(application)
 
