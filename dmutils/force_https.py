@@ -31,7 +31,8 @@ def init_app(app):
 def redirect_to_ssl():
     """Redirect incoming requests to HTTPS."""
     # Should we redirect?
-    if request.url.startswith('http://'):
+    if request.url.startswith('http://') \
+            and request.headers.get('X-Forwarded-Proto', '').lower() != 'https':
         # redirect to HTTPS
         url = request.url.replace('http://', 'https://', 1)
         code = 301  # HTTP code 301 Moved Permanently
