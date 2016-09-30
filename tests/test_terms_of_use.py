@@ -3,14 +3,7 @@ from tests.helpers import BaseApplicationTest, Config
 from dmutils import terms_of_use
 
 
-class TermsConfig(Config):
-    FEATURE_FLAGS = {
-        'ENFORCE_TERMS_REVIEW': True,
-    }
-
-
 class TestTerms(BaseApplicationTest):
-    config = TermsConfig()
 
     def setup(self):
         super(TestTerms, self).setup()

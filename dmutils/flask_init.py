@@ -94,9 +94,7 @@ def init_frontend_app(application, data_api_client, login_manager, template_dirs
         application.logger.info('{method} {url} {status} {user}', extra=params)
     application.extensions['request_log_handler'] = request_log_handler
 
-    with application.app_context():
-        if flask_featureflags.is_active('ENFORCE_TERMS_REVIEW'):
-            terms_of_use.init_app(application)
+    terms_of_use.init_app(application)
 
     @login_manager.user_loader
     def load_user(user_id):
