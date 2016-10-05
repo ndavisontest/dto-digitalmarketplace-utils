@@ -19,6 +19,7 @@ _GOV_EMAIL_DOMAINS = [
     'gov.au',
     'abc.net.au',
     'melbournewater.com.au',
+    'tourism.australia.com'
 ]
 
 
