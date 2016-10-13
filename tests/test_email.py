@@ -16,6 +16,7 @@ from .test_user import user_json
 
 TEST_SECRET_KEY = 'TestKeyTestKeyTestKeyTestKeyTestKeyTestKeyX='
 TEST_ARCHIVE_ADDRESS = 'marketplace+archive@digital.gov.au'
+TEST_RETURN_ADDRESS = 'marketplace+returned@digital.gov.au'
 
 
 @pytest.yield_fixture
@@ -33,6 +34,7 @@ def email_app(app):
     app.config['SECRET_KEY'] = TEST_SECRET_KEY
     app.config['RESET_PASSWORD_SALT'] = 'PassSalt'
     app.config['DM_EMAIL_BCC_ADDRESS'] = TEST_ARCHIVE_ADDRESS
+    app.config['DM_EMAIL_RETURN_ADDRESS'] = TEST_RETURN_ADDRESS
     yield app
 
 
@@ -51,7 +53,8 @@ def test_calls_send_email_with_correct_params(email_app, email_client):
         Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': 'body'}},
                  'Subject': {'Charset': 'UTF-8', 'Data': 'subject'}},
         Destination={'ToAddresses': ['email_address'], 'BccAddresses': [TEST_ARCHIVE_ADDRESS]},
-        Source=u'from_name <from_email>'
+        Source=u'from_name <from_email>',
+        ReturnPath=TEST_RETURN_ADDRESS
     )
 
 
@@ -87,7 +90,8 @@ def test_calls_send_email_with_alternative_reply_to(email_app, email_client):
         Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': 'body'}},
                  'Subject': {'Charset': 'UTF-8', 'Data': 'subject'}},
         Destination={'ToAddresses': ['email_address'], 'BccAddresses': [TEST_ARCHIVE_ADDRESS]},
-        Source=u'from_name <from_email>'
+        Source=u'from_name <from_email>',
+        ReturnPath=TEST_RETURN_ADDRESS
     )
 
 

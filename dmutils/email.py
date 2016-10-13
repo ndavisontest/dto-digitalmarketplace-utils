@@ -53,7 +53,8 @@ def send_email(to_email_addresses, email_body, subject, from_email, from_name, r
             }
             if 'DM_EMAIL_BCC_ADDRESS' in current_app.config:
                 destination_addresses['BccAddresses'] = [current_app.config['DM_EMAIL_BCC_ADDRESS']]
-
+            if 'DM_EMAIL_RETURN_ADDRESS' in current_app.config:
+                return_address = current_app.config['DM_EMAIL_RETURN_ADDRESS']
             result = email_client.send_email(
                 Source=u"{} <{}>".format(from_name, from_email),
                 Destination=destination_addresses,
@@ -69,6 +70,7 @@ def send_email(to_email_addresses, email_body, subject, from_email, from_name, r
                         }
                     }
                 },
+                ReturnPath=return_address or reply_to or from_email,
                 ReplyToAddresses=[reply_to or from_email],
             )
         except botocore.exceptions.ClientError as e:
