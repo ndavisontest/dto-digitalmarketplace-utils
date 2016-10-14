@@ -14,6 +14,7 @@ from flask import current_app, flash
 from flask._compat import string_types
 
 from datetime import datetime
+import pendulum
 from cryptography.fernet import Fernet, InvalidToken
 
 from .formats import DATETIME_FORMAT
@@ -141,9 +142,8 @@ def decode_password_reset_token(token, data_api_client):
         return {'error': 'token_invalid'}
 
     user = data_api_client.get_user(decoded["user"])
-    user_last_changed_password_at = datetime.strptime(
-        user['users']['passwordChangedAt'],
-        DATETIME_FORMAT
+    user_last_changed_password_at = pendulum.parse(
+        user['users']['passwordChangedAt']
     )
 
     if timestamp < user_last_changed_password_at:

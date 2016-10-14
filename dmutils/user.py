@@ -2,6 +2,7 @@ from datetime import datetime
 import hashlib
 import base64
 import pytz
+import pendulum
 
 from dmutils.formats import DATETIME_FORMAT
 
@@ -82,7 +83,7 @@ class User():
         user = user_json["users"]
         supplier_code = None
         supplier_name = None
-        terms_accepted_at = datetime.strptime(user['termsAcceptedAt'], DATETIME_FORMAT)
+        terms_accepted_at = pendulum.parse(user['termsAcceptedAt'])
         terms_accepted_at = terms_accepted_at.replace(tzinfo=pytz.timezone('UTC'))
         if "supplier" in user:
             supplier_code = user["supplier"]["supplierCode"]
