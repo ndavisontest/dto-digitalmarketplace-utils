@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import pytz
+import pendulum
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 DATE_FORMAT = "%Y-%m-%d"
@@ -40,7 +41,7 @@ class DateFormatter(object):
 
     def _format(self, value, fmt):
         if not isinstance(value, datetime):
-            value = datetime.strptime(value, DATETIME_FORMAT)
+            value = pendulum.parse(value)
         if value.tzinfo is None:
             value = pytz.utc.localize(value)
         return value.astimezone(self.timezone).strftime(fmt)
