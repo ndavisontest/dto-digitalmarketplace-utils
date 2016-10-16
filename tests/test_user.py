@@ -24,7 +24,7 @@ def user_json():
                 "supplierCode": 321,
                 "name": "test supplier",
             },
-            "termsAcceptedAt": "2016-01-01T01:00:00.0Z",
+            "termsAcceptedAt": "2016-01-01T01:00:00.0+00:00",
         }
     }
 
