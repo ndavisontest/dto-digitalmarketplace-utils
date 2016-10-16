@@ -83,8 +83,8 @@ class User():
         user = user_json["users"]
         supplier_code = None
         supplier_name = None
-        terms_accepted_at = pendulum.parse(user['termsAcceptedAt'])
-        terms_accepted_at = terms_accepted_at.replace(tzinfo=pytz.timezone('UTC'))
+        terms_accepted_at = pendulum.parse(user['termsAcceptedAt']).in_tz('UTC')
+
         if "supplier" in user:
             supplier_code = user["supplier"]["supplierCode"]
             supplier_name = user["supplier"]["name"]
