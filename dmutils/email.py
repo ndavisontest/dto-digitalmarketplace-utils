@@ -54,8 +54,9 @@ def send_email(to_email_addresses, email_body, subject, from_email, from_name, r
             }
             if 'DM_EMAIL_BCC_ADDRESS' in current_app.config:
                 destination_addresses['BccAddresses'] = [current_app.config['DM_EMAIL_BCC_ADDRESS']]
-            if 'DM_EMAIL_RETURN_ADDRESS' in current_app.config:
-                return_address = current_app.config['DM_EMAIL_RETURN_ADDRESS']
+
+            return_address = current_app.config.get('DM_EMAIL_RETURN_ADDRESS')
+
             result = email_client.send_email(
                 Source=u"{} <{}>".format(from_name, from_email),
                 Destination=destination_addresses,
