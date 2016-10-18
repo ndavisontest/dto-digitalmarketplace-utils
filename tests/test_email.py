@@ -38,6 +38,17 @@ def email_app(app):
     yield app
 
 
+@pytest.yield_fixture
+def email_app_missing_config(app):
+    init_app(app)
+    app.config['SHARED_EMAIL_KEY'] = TEST_SECRET_KEY
+    app.config['INVITE_EMAIL_SALT'] = 'Salt'
+    app.config['SECRET_KEY'] = TEST_SECRET_KEY
+    app.config['RESET_PASSWORD_SALT'] = 'PassSalt'
+    app.config['DM_EMAIL_BCC_ADDRESS'] = TEST_ARCHIVE_ADDRESS
+    yield app
+
+
 def test_calls_send_email_with_correct_params(email_app, email_client):
     with email_app.app_context():
         send_email(
@@ -55,6 +66,26 @@ def test_calls_send_email_with_correct_params(email_app, email_client):
         Destination={'ToAddresses': ['email_address'], 'BccAddresses': [TEST_ARCHIVE_ADDRESS]},
         Source=u'from_name <from_email>',
         ReturnPath=TEST_RETURN_ADDRESS
+    )
+
+
+def test_calls_send_email_missing_config(email_app_missing_config, email_client):
+    with email_app_missing_config.app_context():
+        send_email(
+            "email_address",
+            "body",
+            "subject",
+            "from_email",
+            "from_name",
+        )
+
+    email_client.send_email.assert_called_once_with(
+        ReplyToAddresses=['from_email'],
+        Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': 'body'}},
+                 'Subject': {'Charset': 'UTF-8', 'Data': 'subject'}},
+        Destination={'ToAddresses': ['email_address'], 'BccAddresses': [TEST_ARCHIVE_ADDRESS]},
+        Source=u'from_name <from_email>',
+        ReturnPath='from_email'
     )
 
 
