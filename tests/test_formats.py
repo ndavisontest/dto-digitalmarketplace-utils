@@ -85,12 +85,12 @@ class TestDateFormats(object):
 
     def test_datetimeformat(self):
         cases = [
-            (datetime(2012, 11, 10, 9, 8, 7, 6), 'Saturday 10 November 2012 at 09:08'),
-            ('2012-11-10T09:08:07.0Z', 'Saturday 10 November 2012 at 09:08'),
-            (datetime(2012, 8, 10, 9, 8, 7, 6), 'Friday 10 August 2012 at 10:08'),
-            ('2012-08-10T09:08:07.0Z', 'Friday 10 August 2012 at 10:08'),
-            (datetime(2012, 8, 10, 9, 8, 7, 6, tzinfo=pytz.utc), 'Friday 10 August 2012 at 10:08'),
-            (datetime(2012, 8, 1, 9, 8, 7, 6, tzinfo=pytz.utc), 'Wednesday 1 August 2012 at 10:08'),
+            (datetime(2012, 11, 10, 9, 8, 7, 6), 'Saturday 10 November 2012 at 09:08 AM'),
+            ('2012-11-10T09:08:07.0Z', 'Saturday 10 November 2012 at 09:08 AM'),
+            (datetime(2012, 8, 10, 9, 8, 7, 6), 'Friday 10 August 2012 at 10:08 AM'),
+            ('2012-08-10T09:08:07.0Z', 'Friday 10 August 2012 at 10:08 AM'),
+            (datetime(2012, 8, 10, 9, 8, 7, 6, tzinfo=pytz.utc), 'Friday 10 August 2012 at 10:08 AM'),
+            (datetime(2012, 8, 1, 9, 8, 7, 6, tzinfo=pytz.utc), 'Wednesday 1 August 2012 at 10:08 AM'),
         ]
 
         for dt, formatted_datetime in cases:

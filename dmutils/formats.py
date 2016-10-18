@@ -2,13 +2,15 @@
 from datetime import datetime
 import pytz
 import pendulum
+import six
+
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 DATE_FORMAT = "%Y-%m-%d"
 DISPLAY_SHORT_DATE_FORMAT = '%-d %B'
 DISPLAY_DATE_FORMAT = '%A %-d %B %Y'
 DISPLAY_TIME_FORMAT = '%H:%M:%S'
-DISPLAY_DATETIME_FORMAT = '%A %-d %B %Y at %H:%M'
+DISPLAY_DATETIME_FORMAT = '%A %-d %B %Y at %I:%M %p'
 
 LOTS = [
     {
@@ -37,14 +39,15 @@ LOTS = [
 class DateFormatter(object):
 
     def __init__(self, tz_name='UTC'):
-        self.timezone = pytz.timezone(tz_name)
+        self.tz_name = tz_name
 
     def _format(self, value, fmt):
-        if not isinstance(value, datetime):
-            value = pendulum.parse(value)
-        if value.tzinfo is None:
-            value = pytz.utc.localize(value)
-        return value.astimezone(self.timezone).strftime(fmt)
+        if isinstance(value, six.string_types):
+            dt = pendulum.parse(value)
+        else:
+            dt = pendulum.instance(value)
+
+        return dt.in_tz(self.tz_name).strftime(fmt)
 
     def timeformat(self, value):
         return self._format(value, DISPLAY_TIME_FORMAT)
