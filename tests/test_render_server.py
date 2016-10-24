@@ -37,7 +37,7 @@ class TestRenderServer(BaseApplicationTest):
                 '/render',
                 headers={'content-type': 'application/json'},
                 params={'hash': sha.hexdigest()},
-                data='{"path": "' + path +'", ''"serializedProps": "{\\"_serverContext\\": '
+                data='{"path": "' + path + '", ''"serializedProps": "{\\"_serverContext\\": '
                      '{\\"location\\": \\"/test\\", '
                      '\\"api_url\\": \\"http://api\\"}}", '
                      '"toStaticMarkup": false}'
