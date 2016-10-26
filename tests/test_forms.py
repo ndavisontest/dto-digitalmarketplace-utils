@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from dmutils.forms import (
-    DmForm, email_validator, FakeCsrf, government_email_validator, render_template_with_csrf, StripWhitespaceStringField
+    DmForm, email_validator, FakeCsrf,
+    is_government_email,
+    government_email_validator, render_template_with_csrf, StripWhitespaceStringField
 )
 
 from helpers import BaseApplicationTest
@@ -108,3 +110,22 @@ def test_invalid_email_formats():
     ]
     for address in cases:
         assert email_validator.regex.match(address) is None, address
+
+
+def test_valid_government_emails():
+    cases = [
+        'me@xyz.gov.au',
+        'me@abc.net.au',
+        'itprocurement@unsw.edu.au'
+    ]
+    for address in cases:
+        assert is_government_email(address)
+
+
+def test_invalid_government_emails():
+    cases = [
+        'me@uni.edu.au'
+        'not.gov.au@example.com'
+    ]
+    for address in cases:
+        assert not is_government_email(address)
