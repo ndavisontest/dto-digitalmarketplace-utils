@@ -25,10 +25,14 @@ _GOV_EMAIL_DOMAINS = [
     'csiro.au'
 ]
 
+_GOV_EMAILS = [
+    'itprocurement@unsw.edu.au'
+]
+
 
 def is_government_email(email_address):
     domain = email_address.split('@')[-1]
-    return any(domain == d or domain.endswith('.' + d) for d in _GOV_EMAIL_DOMAINS)
+    return any(email_address in _GOV_EMAILS or domain == d or domain.endswith('.' + d) for d in _GOV_EMAIL_DOMAINS)
 
 
 def government_email_validator(form, field):
