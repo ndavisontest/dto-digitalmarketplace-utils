@@ -5,6 +5,7 @@ from requests import Response, ConnectionError
 from hashlib import sha1
 import pytest
 from react.exceptions import RenderServerError, ReactRenderingError
+from react.response import validate_form_data
 
 
 class RenderConfig(Config):
@@ -92,3 +93,17 @@ class TestRenderServer(BaseApplicationTest):
 
             with pytest.raises(ReactRenderingError):
                 render_server.render('/path')
+
+
+class TestReactResponse(BaseApplicationTest):
+    def test_valid_form(self):
+        data = {'key1': 'value1', 'key2': 'value2'}
+        required_fields = ['key1', 'key2']
+        assert not validate_form_data(data, required_fields)
+
+    def test_invalid_form(self):
+        data = {'key1': 'value1'}
+        required_fields = ['key1', 'key2']
+        errors = validate_form_data(data, required_fields)
+        assert 'key2' in errors
+        assert errors['key2'] == {"required": True}

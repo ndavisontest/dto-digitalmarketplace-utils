@@ -9,3 +9,11 @@ def from_response(request):
             else:
                 result[key] = value
     return result
+
+
+def validate_form_data(data, required_fields):
+    errors = {}
+    for field in required_fields:
+        if not data.get(field, None) or not data.get(field)[0]:
+            errors[field] = {"required": True}
+    return errors
