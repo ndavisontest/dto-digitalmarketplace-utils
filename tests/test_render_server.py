@@ -5,7 +5,9 @@ from requests import Response, ConnectionError
 from hashlib import sha1
 import pytest
 from react.exceptions import RenderServerError, ReactRenderingError
-from react.response import validate_form_data
+from react.response import validate_form_data, from_response
+from flask import request
+from werkzeug.datastructures import MultiDict
 
 
 class RenderConfig(Config):
@@ -96,6 +98,20 @@ class TestRenderServer(BaseApplicationTest):
 
 
 class TestReactResponse(BaseApplicationTest):
+    def test_extract_response(self):
+        data = MultiDict([('a', '1'), ('b[]', '2'), ('b[]', '3'), ("c.d", '4')])
+        with self.flask.test_request_context('/test', method='POST',
+                                             data=data):
+            response_data = from_response(request)
+            assert 'a' in response_data
+            assert response_data['a'] == data['a']
+            assert 'b' in response_data
+            assert 'b[]' not in response_data
+            assert response_data['b'] == ['2', '3']
+            assert 'c' in response_data
+            assert 'd' in response_data['c']
+            assert response_data['c']['d'] == '4'
+
     def test_valid_form(self):
         data = {'key1': 'value1', 'key2': 'value2'}
         required_fields = ['key1', 'key2']
