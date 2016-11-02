@@ -4,10 +4,18 @@ def from_response(request):
         if raw_key not in ['csrf_token']:
             value = request.form.getlist(raw_key)
             key = raw_key.replace('[]', '')
+            # single value as string/int
             if len(value) == 1 and '[]' not in raw_key:
-                result[key] = value[0]
-            else:
+                value = value[0].strip()
+            if '.' not in key:
                 result[key] = value
+            else:
+                parent_name = key.split('.')[0]
+                child_name = key.split('.')[1]
+                if parent_name not in result:
+                    result[parent_name] = {}
+                result[parent_name][child_name] = value
+
     return result
 
 
