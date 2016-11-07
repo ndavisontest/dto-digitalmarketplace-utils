@@ -6,10 +6,10 @@ from dmutils.forms import (
     government_email_validator, render_template_with_csrf, StripWhitespaceStringField
 )
 
-from helpers import BaseApplicationTest
+from .helpers import BaseApplicationTest
 
 
-class TestForm(DmForm):
+class FormForTest(DmForm):
     stripped_field = StripWhitespaceStringField('Stripped', id='stripped_field')
     buyer_email = StripWhitespaceStringField(
         'Buyer email address', id='buyer_email',
@@ -30,7 +30,7 @@ class TestFormHandling(BaseApplicationTest):
     def build_form(self, **kwargs):
         data = dict(self.complete_form_data)
         data.update(**kwargs)
-        return TestForm(**data)
+        return FormForTest(**data)
 
     def test_valid_form(self):
         with self.flask.app_context():
@@ -68,7 +68,7 @@ class TestFormHandling(BaseApplicationTest):
 
     def test_does_not_crash_on_missing_csrf_token(self):
         with self.flask.app_context():
-            form = TestForm(csrf_token=None)
+            form = FormForTest(csrf_token=None)
             assert not form.validate()
             assert 'csrf_token' in form.errors
 
@@ -78,7 +78,7 @@ class TestFormHandling(BaseApplicationTest):
         assert status_code == 123
         assert response.cache_control.private
         assert response.cache_control.max_age == self.flask.config['CSRF_TIME_LIMIT']
-        assert FakeCsrf.valid_token in response.data
+        assert FakeCsrf.valid_token in response.get_data(as_text=True)
 
 
 def test_valid_email_formats():

@@ -7,7 +7,10 @@ from flask import request
 
 from .exceptions import ReactRenderingError, RenderServerError
 
+from six import python_2_unicode_compatible
 
+
+@python_2_unicode_compatible
 class RenderedComponent(object):
     def __init__(self, markup, props, slug=None, files=None):
         self.markup = markup
@@ -17,9 +20,6 @@ class RenderedComponent(object):
 
     def __str__(self):
         return self.markup
-
-    def __unicode__(self):
-        return unicode(self.markup)
 
     def get_bundle(self):
         bundle_url = current_app.config.get('REACT_BUNDLE_URL', '/')
@@ -55,7 +55,7 @@ class RenderServer(object):
             }
         })
 
-        serialized_props = json.dumps(dict(props), cls=JSONEncoder)
+        serialized_props = json.dumps(dict(props), cls=JSONEncoder, sort_keys=True)
 
         if not current_app.config.get('REACT_RENDER', ''):
             return RenderedComponent('', serialized_props)
@@ -65,7 +65,7 @@ class RenderServer(object):
             'serializedProps': serialized_props,
             'toStaticMarkup': to_static_markup
         }
-        serialized_options = json.dumps(options)
+        serialized_options = json.dumps(options, sort_keys=True)
         options_hash = hashlib.sha1(serialized_options.encode('utf-8')).hexdigest()
 
         all_request_headers = {'content-type': 'application/json'}
@@ -81,7 +81,7 @@ class RenderServer(object):
                 headers=all_request_headers,
                 params={'hash': options_hash}
             )
-        except requests.ConnectionError:
+        except requests.exceptions.ConnectionError:
             raise RenderServerError('Could not connect to render server at {}'.format(url))
 
         if res.status_code != 200:

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 from dmutils.filters import markdown_filter, smartjoin, format_links, timesince
-from datetime import datetime, timedelta
+from datetime import timedelta
+import pendulum
 
 
 def test_markdown_filter_produces_markup():
@@ -99,7 +101,8 @@ def test_no_links_no_change():
 
 
 def test_timesince():
-    now = datetime.utcnow()
+    now = pendulum.now('UTC')
+
     times = [
         now,
 
@@ -122,7 +125,7 @@ def test_timesince():
         now - timedelta(days=60),
 
         now - timedelta(days=365),
-        now - timedelta(days=365*2),
+        now - timedelta(days=365 * 2),
     ]
 
     texts = [

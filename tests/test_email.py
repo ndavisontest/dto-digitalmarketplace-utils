@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import \
+    absolute_import, \
+    unicode_literals
+
 from freezegun import freeze_time
 import pytest
 import mock
@@ -11,8 +16,9 @@ from dmutils.config import init_app
 from dmutils.email import (
     generate_token, decode_token, send_email, EmailError, hash_email, decode_invitation_token,
     decode_password_reset_token, parse_fernet_timestamp, InvalidToken)
-from dmutils.formats import DATETIME_FORMAT
+
 from .test_user import user_json
+
 
 TEST_SECRET_KEY = 'TestKeyTestKeyTestKeyTestKeyTestKeyTestKeyX='
 TEST_ARCHIVE_ADDRESS = 'marketplace+archive@digital.gov.au'
@@ -61,8 +67,8 @@ def test_calls_send_email_with_correct_params(email_app, email_client):
 
     email_client.send_email.assert_called_once_with(
         ReplyToAddresses=['from_email'],
-        Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': 'body'}},
-                 'Subject': {'Charset': 'UTF-8', 'Data': 'subject'}},
+        Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': b'body'}},
+                 'Subject': {'Charset': 'UTF-8', 'Data': b'subject'}},
         Destination={'ToAddresses': ['email_address'], 'BccAddresses': [TEST_ARCHIVE_ADDRESS]},
         Source=u'from_name <from_email>',
         ReturnPath=TEST_RETURN_ADDRESS
@@ -81,8 +87,8 @@ def test_calls_send_email_missing_config(email_app_missing_config, email_client)
 
     email_client.send_email.assert_called_once_with(
         ReplyToAddresses=['from_email'],
-        Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': 'body'}},
-                 'Subject': {'Charset': 'UTF-8', 'Data': 'subject'}},
+        Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': b'body'}},
+                 'Subject': {'Charset': 'UTF-8', 'Data': b'subject'}},
         Destination={'ToAddresses': ['email_address'], 'BccAddresses': [TEST_ARCHIVE_ADDRESS]},
         Source=u'from_name <from_email>',
         ReturnPath='from_email'
@@ -118,8 +124,8 @@ def test_calls_send_email_with_alternative_reply_to(email_app, email_client):
 
     email_client.send_email.assert_called_once_with(
         ReplyToAddresses=['reply_address'],
-        Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': 'body'}},
-                 'Subject': {'Charset': 'UTF-8', 'Data': 'subject'}},
+        Message={'Body': {'Html': {'Charset': 'UTF-8', 'Data': b'body'}},
+                 'Subject': {'Charset': 'UTF-8', 'Data': b'subject'}},
         Destination={'ToAddresses': ['email_address'], 'BccAddresses': [TEST_ARCHIVE_ADDRESS]},
         Source=u'from_name <from_email>',
         ReturnPath=TEST_RETURN_ADDRESS
@@ -128,7 +134,6 @@ def test_calls_send_email_with_alternative_reply_to(email_app, email_client):
 
 def test_should_throw_exception_if_email_client_fails(email_app, email_client):
     with email_app.app_context():
-
         email_client.send_email.side_effect = ClientError(
             {'Error': {'Message': "this is an error"}}, ""
         )
@@ -172,7 +177,7 @@ def test_cant_decode_token_with_wrong_salt():
         secret_key=TEST_SECRET_KEY,
         salt="1234567890")
 
-    with pytest.raises(InvalidToken) as error:
+    with pytest.raises(InvalidToken):
         decode_token(token, TEST_SECRET_KEY, 'wrong salt')
 
 
@@ -183,7 +188,7 @@ def test_cant_decode_token_with_wrong_key():
         secret_key=TEST_SECRET_KEY,
         salt="1234567890")
 
-    with pytest.raises(InvalidToken) as error:
+    with pytest.raises(InvalidToken):
         decode_token(token, 'WrongKeyWrongKeyWrongKeyWrongKeyWrongKeyXXX=', '1234567890')
 
 

@@ -3,4 +3,14 @@ from .flask_init import init_app, init_frontend_app, init_manager
 
 import flask_featureflags
 
-__version__ = '24.4.2'
+__all__ = [
+    'logging',
+    'config',
+    'proxy_fix',
+    'formats',
+    'request_id',
+    'init_app',
+    'init_frontend_app',
+    'init_manager',
+    'flask_featureflags'
+]

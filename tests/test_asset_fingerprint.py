@@ -91,5 +91,5 @@ class TestAssetFingerprint(object):
 
 class TestAssetFingerprintWithUnicode(object):
     def test_can_read_self(self):
-        string_with_unicode_character = 'Ralph’s apostrophe'
+        'Ralph’s apostrophe'
         AssetFingerprinter(filesystem_path='tests/').get_url('test_asset_fingerprint.py')

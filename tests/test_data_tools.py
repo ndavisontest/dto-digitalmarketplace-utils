@@ -3,14 +3,12 @@
 from dmutils.data_tools import ValidationError, normalise_abn, normalise_acn, parse_money
 
 import decimal
-import pytest
-from nose.tools import assert_equal, assert_in, assert_is_not_none, assert_true, assert_is
 
 
 class TestNormaliseAcn(object):
 
     def test_basic_normalisation(self):
-        assert_equal(normalise_acn(' 004085616 '), '004 085 616')
+        assert normalise_acn(' 004085616 ') == '004 085 616'
 
     def test_good_acn_formats(self):
         golden = '004 085 616'
@@ -24,7 +22,7 @@ class TestNormaliseAcn(object):
             ' 0-0  4-0 856 1 6 ',
         ]
         for case in cases:
-            assert_equal(normalise_acn(case), golden)
+            assert normalise_acn(case) == golden
 
     def test_bad_acn_formats(self):
         cases = [
@@ -39,8 +37,8 @@ class TestNormaliseAcn(object):
         for case in cases:
             try:
                 normalise_acn(case)
-            except ValidationError, e:
-                assert_in('Invalid ACN', e.message)
+            except ValidationError as e:
+                assert 'Invalid ACN' in e.message
             else:
                 raise Exception('Test failed for case: {}'.format(case))
 
@@ -59,8 +57,8 @@ class TestNormaliseAcn(object):
         for case in cases:
             try:
                 normalise_acn(case)
-            except ValidationError, e:
-                assert_in('Checksum failure', e.message)
+            except ValidationError as e:
+                assert 'Checksum failure' in e.message
             else:
                 raise Exception('Test failed for case: {}'.format(case))
 
@@ -68,7 +66,7 @@ class TestNormaliseAcn(object):
 class TestNormaliseAbn(object):
 
     def test_basic_normalisation(self):
-        assert_equal(normalise_abn(' 51824 753556   '), '51 824 753 556')
+        assert normalise_abn(' 51824 753556   ') == '51 824 753 556'
 
     def test_good_abn_formats(self):
         golden = '28 799 046 203'
@@ -83,7 +81,7 @@ class TestNormaliseAbn(object):
             '2 8 7 9 9 0 4 6 2 0 3 ',
         ]
         for case in cases:
-            assert_equal(normalise_abn(case), golden)
+            assert normalise_abn(case) == golden
 
     def test_bad_abn_formats(self):
         cases = [
@@ -99,8 +97,8 @@ class TestNormaliseAbn(object):
         for case in cases:
             try:
                 normalise_abn(case)
-            except ValidationError, e:
-                assert_in('Invalid ABN', e.message)
+            except ValidationError as e:
+                assert 'Invalid ABN' in e.message
             else:
                 raise Exception('Test failed for case: {}'.format(case))
 
@@ -121,8 +119,8 @@ class TestNormaliseAbn(object):
         for case in cases:
             try:
                 normalise_abn(case)
-            except ValidationError, e:
-                assert_in('Checksum failure', e.message)
+            except ValidationError as e:
+                assert 'Checksum failure' in e.message
             else:
                 raise Exception('Test failed for case: {}'.format(case))
 
@@ -130,11 +128,11 @@ class TestNormaliseAbn(object):
 class TestParseMoney(object):
 
     def test_good_formats(self):
-        assert_equal(parse_money('1'), decimal.Decimal('1'))
-        assert_equal(parse_money('0'), decimal.Decimal('0'))
-        assert_equal(parse_money('1,000.20'), decimal.Decimal('1000.2'))
-        assert_equal(parse_money('$1,000.20'), decimal.Decimal('1000.2'))
-        assert_equal(parse_money('$1000.30'), decimal.Decimal('1000.3'))
+        assert parse_money('1') == decimal.Decimal('1')
+        assert parse_money('0') == decimal.Decimal('0')
+        assert parse_money('1,000.20') == decimal.Decimal('1000.2')
+        assert parse_money('$1,000.20') == decimal.Decimal('1000.2')
+        assert parse_money('$1000.30') == decimal.Decimal('1000.3')
 
     def test_bad_formats(self):
         cases = [
@@ -149,7 +147,7 @@ class TestParseMoney(object):
         for case in cases:
             try:
                 parse_money(case)
-            except ValidationError, e:
+            except ValidationError:
                 pass
             else:
                 raise Exception('Test failed for case: {}'.format(case))

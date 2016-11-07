@@ -1,4 +1,4 @@
-from tests.helpers import BaseApplicationTest, Config
+from tests.helpers import BaseApplicationTest
 
 from dmutils import terms_of_use
 

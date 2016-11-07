@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import re
 from markdown import markdown
 from flask import Markup
-from datetime import datetime
+import pendulum
 
 
 def markdown_filter(text, *args, **kwargs):
@@ -54,23 +54,17 @@ def timesince(before, now=None, default="just now"):
     3 days ago, 5 hours ago etc.
     """
 
-    if not now:
-        now = datetime.utcnow()
-    diff = now - before
+    before = pendulum.instance(before)
 
-    periods = (
-        (diff.days / 365, "year", "years"),
-        (diff.days / 30, "month", "months"),
-        (diff.days / 7, "week", "weeks"),
-        (diff.days, "day", "days"),
-        (diff.seconds / 3600, "hour", "hours"),
-        (diff.seconds / 60, "minute", "minutes"),
-        (diff.seconds, "second", "seconds"),
-    )
+    if now:
+        now = pendulum.instance(now)
+    else:
+        now = pendulum.now('UTC')
 
-    for period, singular, plural in periods:
+    if now == before:
+        return default
 
-        if period:
-            return "%d %s ago" % (period, singular if period == 1 else plural)
+    with pendulum.test(now):
+        return before.diff_for_humans()
 
     return default

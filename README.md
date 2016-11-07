@@ -7,14 +7,19 @@ Digital Marketplace utils
 ## Running Tests
 
 	# Initial install
-	virtualenv venv
-	pip install -r requirements_for_test.txt
+	make install
 
-	# In every new shell
-	source venv/bin/activate
+	# Linting (with flake8)
+	make lint
 
-	# Just run it
-	./scripts/run_tests.sh
+	# Testing (with pytest)
+	make test
+
+	# Testing 2 and 3 support (with tox)
+	make tox
+
+	# Full test and lint
+	make testall
 
 ## What's in here?
 

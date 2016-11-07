@@ -1,6 +1,4 @@
 from tests.helpers import BaseApplicationTest, Config
-from dmutils import config, force_https
-from flask import Flask
 
 
 class TestForceHTTPSConfig(Config):

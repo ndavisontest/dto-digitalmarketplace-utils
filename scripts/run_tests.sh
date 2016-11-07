@@ -14,8 +14,8 @@ function display_result {
   fi
 }
 
-pep8 --exclude venv .
+flake8 .
 display_result $? 1 "Code style check"
 
-py.test tests/ $@
+tox $@
 display_result $? 2 "Unit tests"

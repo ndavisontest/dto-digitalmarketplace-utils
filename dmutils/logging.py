@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import json
+
 import logging
 import sys
 import re
@@ -195,4 +195,9 @@ def notify_team(subject, body, more_info_url=None):
                 current_app.config['DM_GENERIC_ADMIN_NAME'],
             )
         except EmailError as e:
-            current_app.logger.error('Failed to send notification email: {}'.format(e.message))
+            try:
+                msg = e.message
+            except AttributeError:
+                msg = str(e)
+
+            current_app.logger.error('Failed to send notification email: {}'.format(msg))

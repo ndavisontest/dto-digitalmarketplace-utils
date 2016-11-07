@@ -7,7 +7,7 @@ from dmutils.user import user_has_role, user_logging_string, User
 
 @pytest.fixture
 def user():
-    return User(123, 'test@example.com', 321, 'test supplier', False, True, 'Name', 'supplier', datetime(2016, 01, 01))
+    return User(123, 'test@example.com', 321, 'test supplier', False, True, 'Name', 'supplier', datetime(2016, 1, 1))
 
 
 @pytest.fixture

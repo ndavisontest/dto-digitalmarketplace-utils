@@ -1,10 +1,7 @@
-from datetime import datetime
+
 import hashlib
 import base64
-import pytz
 import pendulum
-
-from dmutils.formats import DATETIME_FORMAT
 
 
 def hash_email(email):

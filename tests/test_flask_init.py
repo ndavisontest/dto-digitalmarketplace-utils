@@ -2,9 +2,9 @@ from flask import render_template_string
 import flask_featureflags
 from flask_cache import Cache
 
-from dmutils.flask_init import pluralize, init_app, init_frontend_app, init_manager
+from dmutils.flask_init import pluralize, init_manager
 from dmutils.forms import FakeCsrf
-from helpers import BaseApplicationTest, Config
+from .helpers import BaseApplicationTest
 
 import pytest
 
@@ -41,9 +41,8 @@ class TestProdCacheInit(BaseApplicationTest):
 
 
 class TestInitManager(BaseApplicationTest):
-
     def test_init_manager(self):
-        manager = init_manager(self.flask, 5000, [])
+        init_manager(self.flask, 5000, [])
 
 
 class TestFeatureFlags(BaseApplicationTest):

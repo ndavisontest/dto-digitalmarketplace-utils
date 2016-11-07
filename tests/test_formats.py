@@ -3,7 +3,6 @@ from dmutils.formats import DateFormatter, get_label_for_lot_param, lot_to_lot_c
 
 import pytz
 from datetime import datetime
-import pytest
 
 
 class TestFormats(object):

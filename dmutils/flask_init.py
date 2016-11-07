@@ -1,16 +1,18 @@
+from __future__ import absolute_import
+
 import os
 import jinja2
 
 import flask_featureflags
 from flask_featureflags.contrib.inline import InlineFeatureFlag
-from . import config, logging, force_https, proxy_fix, request_id, formats, filters
+from . import config, logging, force_https, request_id, formats, filters
 from flask import Markup, redirect, request, session
 from flask.ext.script import Manager, Server
 from flask_login import current_user
 from werkzeug.contrib.fixers import ProxyFix
 
-from asset_fingerprint import AssetFingerprinter
-from user import User, user_logging_string
+from .asset_fingerprint import AssetFingerprinter
+from .user import User, user_logging_string
 
 from dmutils import terms_of_use
 from dmutils.forms import valid_csrf_or_abort

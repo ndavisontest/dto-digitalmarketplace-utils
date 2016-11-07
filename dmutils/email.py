@@ -1,3 +1,7 @@
+from __future__ import \
+    unicode_literals, \
+    absolute_import
+
 import base64
 from datetime import datetime, timedelta
 import hashlib
@@ -10,14 +14,12 @@ import textwrap
 
 import boto3
 import botocore.exceptions
-from flask import current_app, flash
+from flask import current_app
 from flask._compat import string_types
 
-from datetime import datetime
 import pendulum
 from cryptography.fernet import Fernet, InvalidToken
 
-from .formats import DATETIME_FORMAT
 
 ONE_DAY_IN_SECONDS = 86400
 
@@ -26,9 +28,19 @@ class EmailError(Exception):
     pass
 
 
+def to_bytes(x):
+    if isinstance(x, six.string_types):
+        return x.encode('utf-8')
+    else:
+        return x
+
+
 def send_email(to_email_addresses, email_body, subject, from_email, from_name, reply_to=None):
     if isinstance(to_email_addresses, string_types):
         to_email_addresses = [to_email_addresses]
+
+    email_body = to_bytes(email_body)
+    subject = to_bytes(subject)
 
     if current_app.config.get('DM_SEND_EMAIL_TO_STDERR', False):
         template = Template(textwrap.dedent("""\
@@ -92,23 +104,28 @@ def generate_token(data, secret_key, salt):
     (e.g., a token created for /create-buyer-user being sent by an attacker to /give-user-admin-rights)
     """
     json_data = json.dumps(data)
-    fernet = Fernet(secret_key)
-    return fernet.encrypt(b'{}\0{}'.format(salt, json_data))
+    fernet = Fernet(to_bytes(secret_key))
+    bytestring = b'\0'.join(
+        [
+            to_bytes(salt),
+            to_bytes(json_data)
+        ]
+    )
+    return fernet.encrypt(bytestring)
 
 
 def decode_token(token, secret_key, salt, max_age_in_seconds=ONE_DAY_IN_SECONDS):
-    fernet = Fernet(secret_key)
+    fernet = Fernet(to_bytes(secret_key))
     cleartext = fernet.decrypt(token, ttl=max_age_in_seconds)
     token_salt, json_data = cleartext.split(b'\0', 1)
-    if token_salt != salt:
-        raise InvalidToken
-    return json.loads(json_data)
+    if token_salt != to_bytes(salt):
+        raise InvalidToken('bad token')
+    return json.loads(json_data.decode('utf-8'))
 
 
 def hash_email(email):
     m = hashlib.sha256()
-    m.update(email.encode('utf-8'))
-
+    m.update(to_bytes(email))
     return base64.urlsafe_b64encode(m.digest())
 
 
@@ -161,12 +178,17 @@ def decode_invitation_token(encoded_token, role):
             encoded_token,
             current_app.config['SHARED_EMAIL_KEY'],
             current_app.config['INVITE_EMAIL_SALT'],
-            7*ONE_DAY_IN_SECONDS
+            7 * ONE_DAY_IN_SECONDS
         )
         if all(field in token for field in required_fields):
             return token
         else:
             raise ValueError('Invitation token is missing required keys')
     except Exception as e:
-        current_app.logger.info('Invalid invitation token {}.  Error message: {}'.format(encoded_token, e.message))
+        try:
+            msg = e.message
+        except AttributeError:
+            msg = str(e)
+
+        current_app.logger.info('Invalid invitation token {}.  Error message: {}'.format(encoded_token, msg))
         return None

@@ -27,7 +27,7 @@ def normalise_acn(original_acn):
     # See the following for algorithm details:
     # https://www.asic.gov.au/for-business/starting-a-company/how-to-start-a-company/australian-company-numbers/australian-company-number-digit-check/
     weights = (8, 7, 6, 5, 4, 3, 2, 1, 1)
-    digits = map(int, acn)
+    digits = [int(_) for _ in acn]
     total = sum(w * d for w, d in zip(weights, digits))
     if total % 10 != 0:
         raise ValidationError('Checksum failure for ACN: {}'.format(original_acn))
@@ -54,7 +54,7 @@ def normalise_abn(original_abn):
     # See the following for algorithm details:
     # https://abr.business.gov.au/HelpAbnFormat.aspx
     weights = (10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19)
-    digits = map(int, abn)
+    digits = [int(_) for _ in abn]
     digits[0] -= 1
     total = sum(w * d for w, d in zip(weights, digits))
     if total % 89 != 0:

@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 from mock import patch
-from helpers import BaseApplicationTest, Config
+from .helpers import BaseApplicationTest, Config
 from react.render_server import render_server
-from requests import Response, ConnectionError
+from requests import Response
 from hashlib import sha1
 import pytest
 from react.exceptions import RenderServerError, ReactRenderingError
@@ -41,8 +43,8 @@ class TestRenderServer(BaseApplicationTest):
                 headers={'content-type': 'application/json'},
                 params={'hash': sha.hexdigest()},
                 data='{"path": "' + path + '", ''"serializedProps": "{\\"_serverContext\\": '
-                     '{\\"location\\": \\"/test\\", '
-                     '\\"api_url\\": \\"http://api\\"}}", '
+                     '{\\"api_url\\": \\"http://api\\", '
+                     '\\"location\\": \\"/test\\"}}", '
                      '"toStaticMarkup": false}'
             )
 
@@ -53,15 +55,15 @@ class TestRenderServer(BaseApplicationTest):
             result = render_server.render('/widget/component.js')
             assert result.render() == ''
             assert result.get_props() == '{"_serverContext": ' \
-                                         '{"location": "/test", ' \
-                                         '"api_url": "http://api"}}'
+                                         '{"api_url": "http://api", ' \
+                                         '"location": "/test"}}'
 
     @patch('react.render_server.requests')
     def test_connection_error(self, requests):
         with self.flask.test_request_context('/test'):
-            requests.post.side_effect = ConnectionError()
+            requests.post.side_effect = requests.exceptions.ConnectionError
 
-            with pytest.raises(ConnectionError):
+            with pytest.raises(RenderServerError):
                 render_server.render('/path')
 
     @patch('react.render_server.requests')
