@@ -15,7 +15,7 @@ from werkzeug.datastructures import MultiDict
 class RenderConfig(Config):
     REACT_RENDER = True
     REACT_RENDER_URL = '/render'
-    DM_DATA_API_URL = 'http://api'
+    SERVER_NAME = 'http://api'
 
 
 class TestRenderServer(BaseApplicationTest):
@@ -43,8 +43,9 @@ class TestRenderServer(BaseApplicationTest):
                 headers={'content-type': 'application/json'},
                 params={'hash': sha.hexdigest()},
                 data='{"path": "' + path + '", ''"serializedProps": "{\\"_serverContext\\": '
-                     '{\\"api_url\\": \\"http://api\\", '
-                     '\\"location\\": \\"/test\\"}}", '
+                     '{\\"location\\": \\"/test\\"}, '
+                     '\\"options\\": '
+                     '{\\"apiUrl\\": \\"http://api\\", \\"serverRender\\": true}}", '
                      '"toStaticMarkup": false}'
             )
 
@@ -55,8 +56,9 @@ class TestRenderServer(BaseApplicationTest):
             result = render_server.render('/widget/component.js')
             assert result.render() == ''
             assert result.get_props() == '{"_serverContext": ' \
-                                         '{"api_url": "http://api", ' \
-                                         '"location": "/test"}}'
+                                         '{"location": "/test"}, ' \
+                                         '"options": {"apiUrl": "http://api", ' \
+                                         '"serverRender": true}}'
 
     @patch('react.render_server.requests')
     def test_connection_error(self, requests):

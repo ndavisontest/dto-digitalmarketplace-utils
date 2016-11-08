@@ -46,13 +46,19 @@ class RenderServer(object):
         if props is None:
             props = {}
 
-        api_url = current_app.config.get('DM_DATA_API_URL', None)
+        # Add default options.
+        opts = props.get('options', {})
+        opts.update({
+            'serverRender': True,
+            'apiUrl': current_app.config.get('SERVER_NAME', None)
+        })
+
         # Pass current route path for React router to use
         props.update({
             '_serverContext': {
-                'location': request.path,
-                'api_url': api_url
-            }
+                'location': request.path
+            },
+            'options': opts
         })
 
         serialized_props = json.dumps(dict(props), cls=JSONEncoder, sort_keys=True)
