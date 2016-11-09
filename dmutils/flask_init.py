@@ -4,10 +4,9 @@ import os
 import jinja2
 
 import flask_featureflags
-from flask_featureflags.contrib.inline import InlineFeatureFlag
 from . import config, logging, force_https, request_id, formats, filters
 from flask import Markup, redirect, request, session
-from flask.ext.script import Manager, Server
+from flask_script import Manager, Server
 from flask_login import current_user
 from werkzeug.contrib.fixers import ProxyFix
 
@@ -24,7 +23,6 @@ def init_app(
         bootstrap=None,
         data_api_client=None,
         db=None,
-        feature_flags=None,
         login_manager=None,
         search_api_client=None,
         cache=None,
@@ -41,13 +39,7 @@ def init_app(
     request_id.init_app(application)
     force_https.init_app(application)
 
-    if feature_flags:
-        # Standardize FeatureFlags, only accept inline config variables
-        feature_flags.init_app(application)
-        feature_flags.clear_handlers()
-        feature_flags.add_handler(InlineFeatureFlag())
-    else:
-        flask_featureflags.FeatureFlag(application)
+    flask_featureflags.FeatureFlag(application)
 
     if bootstrap:
         bootstrap.init_app(application)
