@@ -35,14 +35,21 @@ def to_bytes(x):
         return x
 
 
+def to_text(x):
+    if isinstance(x, six.binary_type):
+        return x.decode('utf-8')
+    else:
+        return x
+
+
 def send_email(to_email_addresses, email_body, subject, from_email, from_name, reply_to=None):
     if isinstance(to_email_addresses, string_types):
         to_email_addresses = [to_email_addresses]
 
-    email_body = to_bytes(email_body)
-    subject = to_bytes(subject)
-
     if current_app.config.get('DM_SEND_EMAIL_TO_STDERR', False):
+        email_body = to_text(email_body)
+        subject = to_text(subject)
+
         template = Template(textwrap.dedent("""\
             To: $to
             Subject: $subject
@@ -50,15 +57,21 @@ def send_email(to_email_addresses, email_body, subject, from_email, from_name, r
             Reply-To: $reply_to
 
             $body"""))
-        sys.stderr.write(template.substitute(
+
+        subbed = template.substitute(
             to=', '.join(to_email_addresses),
             subject=subject,
             from_line='{} <{}>'.format(from_name, from_email),
             reply_to=reply_to,
             body=email_body
-        ))
+        )
+        sys.stderr.write(subbed)
+
     else:
         try:
+            email_body = to_bytes(email_body)
+            subject = to_bytes(subject)
+
             email_client = boto3.client('ses')
 
             destination_addresses = {
