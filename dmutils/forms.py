@@ -1,4 +1,4 @@
-from datetime import timedelta
+# from datetime import timedelta
 from functools import wraps
 import re
 
@@ -94,7 +94,6 @@ class DmForm(Form):
     def __init__(self, *args, **kwargs):
         if current_app.config['CSRF_ENABLED']:
             self.Meta.csrf_secret = current_app.config['SECRET_KEY']
-            self.Meta.csrf_time_limit = timedelta(seconds=current_app.config['CSRF_TIME_LIMIT'])
         elif current_app.config.get('CSRF_FAKED', False):
             self.Meta.csrf_class = FakeCsrf
         else:
