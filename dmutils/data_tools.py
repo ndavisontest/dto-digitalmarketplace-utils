@@ -8,6 +8,9 @@ class ValidationError(ValueError):
     def __init__(self, message):
         self.message = message
 
+    def __str__(self):
+        return "ValidationError: {}".format(self.message)
+
 
 def normalise_acn(original_acn):
     """
