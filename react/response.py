@@ -22,6 +22,15 @@ def from_response(request):
 def validate_form_data(data, required_fields):
     errors = {}
     for field in required_fields:
-        if not data.get(field, None) or not data.get(field)[0]:
-            errors[field] = {"required": True}
+        name = field[0] if isinstance(field, tuple) else field
+        if not data.get(name, None) or not data.get(name)[0]:
+            errors[name] = {"required": True}
+            continue
+
+        length = field[1] if isinstance(field, tuple) else None
+        if length and len(data.get(name)) < length:
+            errors[name] = {"min": True}
+
     return errors
+
+
