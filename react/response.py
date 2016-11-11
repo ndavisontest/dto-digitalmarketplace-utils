@@ -32,5 +32,3 @@ def validate_form_data(data, required_fields):
             errors[name] = {"min": True}
 
     return errors
-
-
