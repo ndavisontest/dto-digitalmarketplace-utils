@@ -119,11 +119,17 @@ class TestReactResponse(BaseApplicationTest):
     def test_valid_form(self):
         data = {'key1': 'value1', 'key2': 'value2'}
         required_fields = ['key1', 'key2']
+        min_fields = ['key1', ('key2', 5)]
         assert not validate_form_data(data, required_fields)
+        assert not validate_form_data(data, min_fields)
 
     def test_invalid_form(self):
         data = {'key1': 'value1'}
         required_fields = ['key1', 'key2']
+        min_fields = [('key1', 10)]
         errors = validate_form_data(data, required_fields)
+        min_errors = validate_form_data(data, min_fields)
         assert 'key2' in errors
         assert errors['key2'] == {"required": True}
+        assert 'key1' in min_errors
+        assert min_errors['key1'] == {"min": True}
