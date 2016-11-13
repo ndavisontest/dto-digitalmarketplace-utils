@@ -102,7 +102,22 @@ class TestRenderServer(BaseApplicationTest):
 
 
 class TestReactResponse(BaseApplicationTest):
-    def test_extract_response(self):
+    def test_extract_json_response(self):
+        data = MultiDict([('a', '1'), ('b[]', '2'), ('b[]', '3'), ("c.d", '4')])
+        data_json = '{"a": "1", "b": ["2","3"], "c": {"d": "4"}}'
+        with self.flask.test_request_context('/test', method='POST',
+                                             data=data_json, content_type="application/json"):
+            response_data = from_response(request)
+            assert 'a' in response_data
+            assert response_data['a'] == data['a']
+            assert 'b' in response_data
+            assert 'b[]' not in response_data
+            assert response_data['b'] == ['2', '3']
+            assert 'c' in response_data
+            assert 'd' in response_data['c']
+            assert response_data['c']['d'] == '4'
+
+    def test_extract_form_response(self):
         data = MultiDict([('a', '1'), ('b[]', '2'), ('b[]', '3'), ("c.d", '4')])
         with self.flask.test_request_context('/test', method='POST',
                                              data=data):
