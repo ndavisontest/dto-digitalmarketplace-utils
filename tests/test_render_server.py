@@ -23,7 +23,10 @@ class TestRenderServer(BaseApplicationTest):
 
     @patch('react.render_server.hashlib')
     @patch('react.render_server.requests')
-    def test_render_server_success(self, requests, hashlib):
+    @patch('react.render_server.get_csrf_token')
+    def test_render_server_success(self, get_csrf_token, requests, hashlib):
+        get_csrf_token.return_value = 'abc123'
+
         with self.flask.test_request_context('/test'):
             sha = sha1()
             hashlib.sha1.return_value = sha
@@ -43,20 +46,23 @@ class TestRenderServer(BaseApplicationTest):
                 headers={'content-type': 'application/json'},
                 params={'hash': sha.hexdigest()},
                 data='{"path": "' + path + '", ''"serializedProps": "{\\"_serverContext\\": '
-                     '{\\"location\\": \\"/test\\"}, '
+                     '{\\"location\\": \\"/test\\"}, \\"form_options\\": {\\"csrf_token\\": \\"abc123\\"}, '
                      '\\"options\\": '
                      '{\\"apiUrl\\": \\"http://api\\", \\"serverRender\\": true}}", '
                      '"toStaticMarkup": false}'
             )
 
-    def test_react_render_not_set(self):
+    @patch('react.render_server.get_csrf_token')
+    def test_react_render_not_set(self, get_csrf_token):
+        get_csrf_token.return_value = 'abc123'
+
         self.flask.config.update({'REACT_RENDER': None})
 
         with self.flask.test_request_context('/test'):
             result = render_server.render('/widget/component.js')
             assert result.render() == ''
             assert result.get_props() == '{"_serverContext": ' \
-                                         '{"location": "/test"}, ' \
+                                         '{"location": "/test"}, "form_options": {"csrf_token": "abc123"}, ' \
                                          '"options": {"apiUrl": "http://api", ' \
                                          '"serverRender": true}}'
 

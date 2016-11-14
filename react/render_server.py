@@ -6,6 +6,7 @@ from flask.json import JSONEncoder
 from flask import request
 
 from .exceptions import ReactRenderingError, RenderServerError
+from dmutils.csrf import get_csrf_token
 
 from six import python_2_unicode_compatible
 
@@ -16,7 +17,7 @@ class RenderedComponent(object):
         self.markup = markup
         self.props = props
         self.slug = slug
-        self.files = files
+        self.files = files or {}
 
     def __str__(self):
         return self.markup
@@ -45,6 +46,11 @@ class RenderServer(object):
 
         if props is None:
             props = {}
+
+        if 'form_options' not in props:
+            props['form_options'] = {}
+
+        props['form_options']['csrf_token'] = get_csrf_token()
 
         # Add default options.
         opts = props.get('options', {})

@@ -5,8 +5,8 @@ import jinja2
 
 import flask_featureflags
 from . import config, logging, force_https, request_id, formats, filters
-from flask import Markup, redirect, request, session
-from flask_script import Manager, Server
+from flask import Markup, redirect, request, session, current_app, abort
+from flask.ext.script import Manager, Server
 from flask_login import current_user
 from werkzeug.contrib.fixers import ProxyFix
 
@@ -14,7 +14,9 @@ from .asset_fingerprint import AssetFingerprinter
 from .user import User, user_logging_string
 
 from dmutils import terms_of_use
-from dmutils.forms import valid_csrf_or_abort
+from dmutils.forms import is_csrf_token_valid
+
+from .csrf import check_valid_header_csrf
 
 
 def init_app(
@@ -97,7 +99,14 @@ def init_frontend_app(application, data_api_client, login_manager, template_dirs
     @application.before_request
     def check_csrf_token():
         if request.method in ('POST', 'PATCH', 'PUT', 'DELETE'):
-            valid_csrf_or_abort()
+            flask_csrf_valid = is_csrf_token_valid()
+            react_csrf_valid = check_valid_header_csrf()
+
+            if not (flask_csrf_valid or react_csrf_valid):
+                current_app.logger.info(
+                    u'csrf.invalid_token: Aborting request, user_id: {user_id}',
+                    extra={'user_id': session.get('user_id', '<unknown')})
+                abort(400, 'Invalid CSRF token. Please try again.')
 
     @application.before_request
     def refresh_session():

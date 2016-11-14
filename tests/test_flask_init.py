@@ -87,6 +87,19 @@ class TestCsrf(BaseApplicationTest):
         )
         assert res.status_code == 400
 
+    def test_alternate_csrf(self):
+        with self.app.session_transaction() as sess:
+            sess['_csrf_token'] = 'abc123'
+
+        res = self.app.post(
+            '/thing',
+            data={'csrf_token': 'nope'},
+            headers={
+                'X-CSRFToken': 'abc123'
+            }
+        )
+        assert res.status_code == 200
+
 
 class TestTemplateFilters(BaseApplicationTest):
 
