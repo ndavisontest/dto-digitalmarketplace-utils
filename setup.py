@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='dto-digitalmarketplace-utils',
-    version='25.20.2',
+    version='25.21.4',
     url='https://github.com/ausdto/dto-digitalmarketplace-utils',
     license='MIT',
     author='GDS Developers',
