@@ -41,8 +41,12 @@ class RenderedComponent(object):
 
 
 class RenderServer(object):
+    @property
+    def url(self):
+        return current_app.config.get('REACT_RENDER_URL', '')
+
     def render(self, path, props=None, to_static_markup=False, request_headers=None):
-        url = current_app.config.get('REACT_RENDER_URL', '')
+        url = self.url
 
         if props is None:
             props = {}

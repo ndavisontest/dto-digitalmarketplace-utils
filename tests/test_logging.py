@@ -2,11 +2,8 @@ from __future__ import absolute_import
 import tempfile
 import logging
 import mock
-from requests import Response
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+import responses
+import six
 import json
 
 from dmutils import request_id
@@ -15,6 +12,11 @@ from dmutils.logging import init_app, RequestIdFilter, JSONFormatter, CustomLogF
 from dmutils.logging import LOG_FORMAT, TIME_FORMAT, slack_escape, notify_team
 
 from tests.helpers import BaseApplicationTest, Config
+
+if six.PY2:
+    from io import BytesIO as StringIO
+else:
+    from io import StringIO
 
 
 def test_request_id_filter_not_in_app_context():
@@ -170,19 +172,18 @@ class TestNotifyTeam(BaseApplicationTest):
 
     config = NotifyTeamConfig()
 
+    @responses.activate
     @mock.patch('dmutils.logging.send_email')
-    @mock.patch('dmutils.logging.requests')
-    def test_notify(self, requests, send_email):
+    def test_notify(self, send_email):
         with self.flask.app_context():
-            slack_response = Response()
-            slack_response.status_code = 200
-            requests.post.return_value = slack_response
+            responses.add(responses.POST, url=self.config.DM_TEAM_SLACK_WEBHOOK, body='')
+
             notify_team('Something Happened', 'It happened', 'https://example.com/it')
 
-            requests.post.assert_called_with(
-                self.config.DM_TEAM_SLACK_WEBHOOK,
-                json=mock.ANY,
-            )
+            resp = responses.calls[0].response
+
+            assert resp.url == self.config.DM_TEAM_SLACK_WEBHOOK
+            assert resp.json == mock.ANY
 
             send_email.assert_called_once_with(
                 self.config.DM_TEAM_EMAIL,
@@ -192,18 +193,17 @@ class TestNotifyTeam(BaseApplicationTest):
                 self.config.DM_GENERIC_ADMIN_NAME,
             )
 
+    @responses.activate
     @mock.patch('dmutils.logging.send_email')
-    @mock.patch('dmutils.logging.requests')
-    def test_slack_error_path(self, requests, send_email):
+    def test_slack_error_path(self, send_email):
         with self.flask.app_context():
-            error_response = Response()
-            error_response.status_code = 400
-            requests.post.return_value = error_response
+            responses.add(responses.POST, url=self.config.DM_TEAM_SLACK_WEBHOOK, status=400)
             notify_team('Something Happened', 'It happened', 'https://example.com/it')
 
+    @responses.activate
     @mock.patch('dmutils.logging.send_email')
-    @mock.patch('dmutils.logging.requests')
-    def test_email_error_path(self, requests, send_email):
+    def test_email_error_path(self, send_email):
         with self.flask.app_context():
+            responses.add(responses.POST, url=self.config.DM_TEAM_SLACK_WEBHOOK, status=400)
             send_email.side_effect = EmailError(':(')
             notify_team('Something Happened', 'It happened', 'https://example.com/it')

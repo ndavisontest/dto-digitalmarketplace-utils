@@ -9,3 +9,4 @@ pytest-sugar
 cffi
 tox
 flake8
+responses

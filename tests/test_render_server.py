@@ -1,57 +1,59 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from mock import patch
 from .helpers import BaseApplicationTest, Config
 from react.render_server import render_server
-from requests import Response
 from hashlib import sha1
 import pytest
 from react.exceptions import RenderServerError, ReactRenderingError
 from react.response import validate_form_data, from_response
 from flask import request
 from werkzeug.datastructures import MultiDict
+import requests
+import responses
+from six.moves.urllib import parse as urls
 
 
 class RenderConfig(Config):
     REACT_RENDER = True
-    REACT_RENDER_URL = '/render'
+    REACT_RENDER_URL = 'http://example.com/render'
     SERVER_NAME = 'http://api'
 
 
 class TestRenderServer(BaseApplicationTest):
     config = RenderConfig()
 
+    @responses.activate
     @patch('react.render_server.hashlib')
-    @patch('react.render_server.requests')
     @patch('react.render_server.get_csrf_token')
-    def test_render_server_success(self, get_csrf_token, requests, hashlib):
+    def test_render_server_success(self, get_csrf_token, hashlib):
         get_csrf_token.return_value = 'abc123'
 
         with self.flask.test_request_context('/test'):
             sha = sha1()
             hashlib.sha1.return_value = sha
 
-            res = Response()
-            res.status_code = 200
             markup = 'hello world!'
-            res.json = lambda: {'markup': markup}
-            requests.post.return_value = res
-
             path = '/widget/component.js'
+            params = {'hash': sha.hexdigest()}
+
+            responses.add(responses.POST, render_server.url, json={'markup': markup})
+
             result = render_server.render(path)
-
             assert result.render() == markup
-            requests.post.assert_called_with(
-                '/render',
-                headers={'content-type': 'application/json'},
-                params={'hash': sha.hexdigest()},
-                data='{"path": "' + path + '", ''"serializedProps": "{\\"_serverContext\\": '
-                     '{\\"location\\": \\"/test\\"}, \\"form_options\\": {\\"csrf_token\\": \\"abc123\\"}, '
-                     '\\"options\\": '
-                     '{\\"apiUrl\\": \\"http://api\\", \\"serverRender\\": true}}", '
-                     '"toStaticMarkup": false}'
-            )
 
+            assert len(responses.calls) == 1
+            req = responses.calls[0].request
+
+            assert req.url == self.config.REACT_RENDER_URL + '?' + urls.urlencode(params)
+            assert req.headers['content-type'] == 'application/json'
+            assert req.body == '{"path": "' + path + '", ''"serializedProps": "{\\"_serverContext\\": ' \
+                '{\\"location\\": \\"/test\\"}, \\"form_options\\": {\\"csrf_token\\": \\"abc123\\"}, ' \
+                '\\"options\\": ' \
+                '{\\"apiUrl\\": \\"http://api\\", \\"serverRender\\": true}}", ' \
+                '"toStaticMarkup": false}'
+
+    @responses.activate
     @patch('react.render_server.get_csrf_token')
     def test_react_render_not_set(self, get_csrf_token):
         get_csrf_token.return_value = 'abc123'
@@ -59,6 +61,8 @@ class TestRenderServer(BaseApplicationTest):
         self.flask.config.update({'REACT_RENDER': None})
 
         with self.flask.test_request_context('/test'):
+            responses.add(responses.POST, render_server.url, json={})
+
             result = render_server.render('/widget/component.js')
             assert result.render() == ''
             assert result.get_props() == '{"_serverContext": ' \
@@ -66,42 +70,36 @@ class TestRenderServer(BaseApplicationTest):
                                          '"options": {"apiUrl": "http://api", ' \
                                          '"serverRender": true}}'
 
-    @patch('react.render_server.requests')
-    def test_connection_error(self, requests):
+    @responses.activate
+    def test_connection_error(self):
+        e = requests.exceptions.ConnectionError('mock connection error!')
+
         with self.flask.test_request_context('/test'):
-            requests.post.side_effect = requests.exceptions.ConnectionError
+            responses.add(responses.POST, render_server.url, body=e)
 
             with pytest.raises(RenderServerError):
                 render_server.render('/path')
 
-    @patch('react.render_server.requests')
-    def test_non_200_status_code(self, requests):
+    @responses.activate
+    def test_non_200_status_code(self):
         with self.flask.test_request_context('/test'):
-            res = Response()
-            res.status_code = 400
-            requests.post.return_value = res
+            responses.add(responses.POST, render_server.url, status=400)
 
             with pytest.raises(RenderServerError):
                 render_server.render('/path')
 
-    @patch('react.render_server.requests')
-    def test_no_markup(self, requests):
+    @responses.activate
+    def test_no_markup(self):
         with self.flask.test_request_context('/test'):
-            res = Response()
-            res.status_code = 200
-            res.json = lambda: {'markup': None}
-            requests.post.return_value = res
+            responses.add(responses.POST, render_server.url, json={'markup': None})
 
             with pytest.raises(ReactRenderingError):
                 render_server.render('/path')
 
-    @patch('react.render_server.requests')
-    def test_render_error(self, requests):
+    @responses.activate
+    def test_render_error(self,):
         with self.flask.test_request_context('/test'):
-            res = Response()
-            res.status_code = 200
-            res.json = lambda: {'error': 'an error'}
-            requests.post.return_value = res
+            responses.add(responses.POST, render_server.url, json={'error': 'an error'})
 
             with pytest.raises(ReactRenderingError):
                 render_server.render('/path')
