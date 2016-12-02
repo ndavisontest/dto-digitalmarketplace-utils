@@ -10,3 +10,5 @@ cffi
 tox
 flake8
 responses
+blinker
+rollbar

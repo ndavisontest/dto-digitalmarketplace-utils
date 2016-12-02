@@ -4,7 +4,7 @@ import os
 import jinja2
 
 import flask_featureflags
-from . import config, logging, force_https, request_id, formats, filters
+from . import config, logging, force_https, request_id, formats, filters, rollbar_agent
 from flask import Markup, redirect, request, session, current_app, abort
 from flask.ext.script import Manager, Server
 from flask_login import current_user
@@ -40,6 +40,7 @@ def init_app(
     ProxyFix(application)
     request_id.init_app(application)
     force_https.init_app(application)
+    rollbar_agent.init_app(application)
 
     flask_featureflags.FeatureFlag(application)
 
