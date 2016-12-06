@@ -35,6 +35,7 @@ setup(
         'wtforms',
         'waitress',
         'workdays',
-        'pendulum'
+        'pendulum',
+        'rollbar',
     ]
 )

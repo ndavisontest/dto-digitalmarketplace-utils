@@ -93,6 +93,25 @@ def test_User_from_json_with_supplier():
     assert user.supplier_name == 'test supplier'
 
 
+def test_User_from_json_without_supplier():
+    user = User.from_json({'users': {
+        'id': 123,
+        'name': 'Name',
+        'role': 'applicant',
+        'emailAddress': 'test@example.com',
+        'locked': False,
+        'active': True,
+        'supplier': None,
+        'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+    }})
+    assert user.id == 123
+    assert user.name == 'Name'
+    assert user.role == 'applicant'
+    assert user.email_address == 'test@example.com'
+    assert user.supplier_code is None
+    assert user.supplier_name is None
+
+
 def test_User_has_role(user_json):
     user = User.from_json(user_json)
     assert user.has_role('supplier')

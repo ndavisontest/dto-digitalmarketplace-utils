@@ -82,9 +82,15 @@ class User():
         supplier_name = None
         terms_accepted_at = pendulum.parse(user['termsAcceptedAt']).in_tz('UTC')
 
-        if "supplier" in user:
-            supplier_code = user["supplier"]["supplierCode"]
-            supplier_name = user["supplier"]["name"]
+        try:
+            supplier = user["supplier"]
+
+            if supplier:
+                supplier_code = supplier.get('supplierCode')
+                supplier_name = supplier.get('name')
+        except KeyError:
+            pass
+
         return User(
             user_id=user["id"],
             email_address=user['emailAddress'],
