@@ -101,57 +101,60 @@ def test_no_links_no_change():
 
 
 def test_timesince():
-    now = pendulum.now('UTC')
+    known = pendulum.create(2001, 5, 21, 12)
 
-    times = [
-        now,
+    with pendulum.test(known):
+        now = pendulum.now('UTC')
 
-        now - timedelta(seconds=1),
-        now - timedelta(seconds=2),
+        times = [
+            now,
 
-        now - timedelta(minutes=1),
-        now - timedelta(minutes=2),
+            now - timedelta(seconds=1),
+            now - timedelta(seconds=2),
 
-        now - timedelta(hours=1),
-        now - timedelta(hours=2),
+            now - timedelta(minutes=1),
+            now - timedelta(minutes=2),
 
-        now - timedelta(days=1),
-        now - timedelta(days=2),
+            now - timedelta(hours=1),
+            now - timedelta(hours=2),
 
-        now - timedelta(days=7),
-        now - timedelta(days=14),
+            now - timedelta(days=1),
+            now - timedelta(days=2),
 
-        now - timedelta(days=30),
-        now - timedelta(days=60),
+            now - timedelta(days=7),
+            now - timedelta(days=14),
 
-        now - timedelta(days=365),
-        now - timedelta(days=365 * 2),
-    ]
+            now - timedelta(days=30),
+            now - timedelta(days=60),
 
-    texts = [
-        'just now',
+            now - timedelta(days=365),
+            now - timedelta(days=365 * 2),
+        ]
 
-        '1 second ago',
-        '2 seconds ago',
+        texts = [
+            'just now',
 
-        '1 minute ago',
-        '2 minutes ago',
+            '1 second ago',
+            '2 seconds ago',
 
-        '1 hour ago',
-        '2 hours ago',
+            '1 minute ago',
+            '2 minutes ago',
 
-        '1 day ago',
-        '2 days ago',
+            '1 hour ago',
+            '2 hours ago',
 
-        '1 week ago',
-        '2 weeks ago',
+            '1 day ago',
+            '2 days ago',
 
-        '1 month ago',
-        '2 months ago',
+            '1 week ago',
+            '2 weeks ago',
 
-        '1 year ago',
-        '2 years ago',
-    ]
+            '1 month ago',
+            '1 month ago',
 
-    for i, time in enumerate(times):
-        assert timesince(time, now) == texts[i]
+            '1 year ago',
+            '1 year ago',
+        ]
+
+        for i, time in enumerate(times):
+            assert timesince(time, now) == texts[i]
