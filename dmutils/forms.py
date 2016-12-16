@@ -21,12 +21,12 @@ _GOV_EMAIL_DOMAINS = [
     'melbournewater.com.au',
     'tourism.australia.com',
     'victrack.com.au',
-    'auspost.com.au',
-    'csiro.au'
+    'auspost.com.au'
 ]
 
 _GOV_EMAILS = [
-    'itprocurement@unsw.edu.au'
+    'itprocurement@unsw.edu.au',
+    'bill.simpson-young@data61.csiro.au'
 ]
 
 
