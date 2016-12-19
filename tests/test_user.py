@@ -7,7 +7,7 @@ from dmutils.user import user_has_role, user_logging_string, User
 
 @pytest.fixture
 def user():
-    return User(123, 'test@example.com', 321, 'test supplier', False, True, 'Name', 'supplier', datetime(2016, 1, 1))
+    return User(123, 'test@example.com', 321, 'test supplier', False, True, 'Name', 'supplier', datetime(2016, 1, 1), 5)
 
 
 @pytest.fixture
@@ -25,6 +25,9 @@ def user_json():
                 "name": "test supplier",
             },
             "termsAcceptedAt": "2016-01-01T01:00:00.0+00:00",
+            "application": {
+                "application_id": 5
+            }
         }
     }
 
@@ -91,6 +94,26 @@ def test_User_from_json_with_supplier():
     assert user.email_address == 'test@example.com'
     assert user.supplier_code == 321
     assert user.supplier_name == 'test supplier'
+
+
+def test_User_from_json_with_application():
+    user = User.from_json({'users': {
+        'id': 123,
+        'name': 'Name',
+        'role': 'applicant',
+        'emailAddress': 'test@example.com',
+        'locked': False,
+        'active': True,
+        'application': {
+            'id': 5,
+        },
+        'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+    }})
+    assert user.id == 123
+    assert user.name == 'Name'
+    assert user.role == 'applicant'
+    assert user.email_address == 'test@example.com'
+    assert user.application_id == 5
 
 
 def test_User_from_json_without_supplier():
