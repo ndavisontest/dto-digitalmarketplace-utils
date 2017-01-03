@@ -5,6 +5,7 @@ import sys
 import re
 from itertools import product
 import requests
+import rollbar
 
 from flask import request, current_app, render_template_string
 from flask.ctx import has_request_context
@@ -199,5 +200,5 @@ def notify_team(subject, body, more_info_url=None):
                 msg = e.message
             except AttributeError:
                 msg = str(e)
-
+            rollbar.report_exc_info()
             current_app.logger.error('Failed to send notification email: {}'.format(msg))
