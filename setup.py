@@ -37,5 +37,6 @@ setup(
         'workdays',
         'pendulum',
         'rollbar',
+        'blinker'
     ]
 )
