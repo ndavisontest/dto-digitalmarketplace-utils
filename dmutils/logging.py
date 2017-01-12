@@ -162,6 +162,10 @@ def notify_team(subject, body, more_info_url=None):
 
     Notification messages should be very simple so that they're compatible with a variety of backends.
     """
+    # ensure strings can be encoded as ascii only
+    body = body.encode("ascii", "ignore").decode('ascii')
+    subject = subject.encode("ascii", "ignore").decode('ascii')
+
     if current_app.config.get('DM_TEAM_SLACK_WEBHOOK', None):
         slack_body = slack_escape(body)
         if more_info_url:
