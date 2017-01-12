@@ -30,6 +30,14 @@ class RenderedComponent(object):
         bundle_url = current_app.config.get('REACT_BUNDLE_URL', '/')
         return bundle_url + self.files.get('vendor', 'vendor.js')
 
+    def get_file(self, key=''):
+        # If bundle doesn't contain requested file, don't return half a url.
+        if key not in self.files:
+            return None
+
+        bundle_url = current_app.config.get('REACT_BUNDLE_URL', '/')
+        return bundle_url + self.files.get(key)
+
     def get_slug(self):
         return self.slug
 
