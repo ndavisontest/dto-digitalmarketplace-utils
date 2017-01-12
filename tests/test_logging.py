@@ -198,7 +198,7 @@ class TestNotifyTeam(BaseApplicationTest):
     def test_slack_error_path(self, send_email):
         with self.flask.app_context():
             responses.add(responses.POST, url=self.config.DM_TEAM_SLACK_WEBHOOK, status=400)
-            notify_team('Something Happened', 'It happened', 'https://example.com/it')
+            notify_team(u'Something Happened \u2013 Production', u'It happened \u2013 today', 'https://example.com/it')
 
     @responses.activate
     @mock.patch('dmutils.logging.send_email')
