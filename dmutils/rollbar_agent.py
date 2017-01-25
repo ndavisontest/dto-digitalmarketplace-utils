@@ -1,6 +1,6 @@
 import os
 import rollbar
-from flask import got_request_exception, request
+from flask import current_app, got_request_exception, request
 from flask_login import current_user
 
 
@@ -14,7 +14,7 @@ def _hook(request, data):
     if request:
         data['context'] = str(request.url_rule)
 
-    if current_user:
+    if hasattr(current_app, 'login_manager') and current_user:
         data['person'] = {"id": current_user.id, "username": current_user.name, "email": current_user.email_address}
 
 
