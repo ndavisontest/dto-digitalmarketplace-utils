@@ -2,7 +2,7 @@
 Common utils for Digital Marketplace apps.
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='dto-digitalmarketplace-utils',
@@ -12,7 +12,7 @@ setup(
     author='GDS Developers',
     description='Common utils for Digital Marketplace apps.',
     long_description=__doc__,
-    packages=find_packages(),
+    packages=['dmutils', 'react'],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
