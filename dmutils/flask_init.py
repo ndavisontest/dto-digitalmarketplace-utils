@@ -6,7 +6,7 @@ import jinja2
 import flask_featureflags
 from . import config, logging, force_https, request_id, formats, filters, rollbar_agent
 from flask import Markup, redirect, request, session, current_app, abort
-from flask.ext.script import Manager, Server
+from flask_script import Manager, Server
 from flask_login import current_user
 from werkzeug.contrib.fixers import ProxyFix
 

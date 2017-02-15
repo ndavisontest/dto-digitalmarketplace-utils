@@ -51,7 +51,7 @@ def init_app(app):
         logger.addHandler(handler)
         logger.setLevel(loglevel)
 
-    app.logger.info("Logging configured")
+    app.logger.debug("Logging configured")
 
 
 def configure_handler(handler, app, formatter):
