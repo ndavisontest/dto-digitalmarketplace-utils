@@ -40,6 +40,18 @@ def test_s3_upload_with_invalid_extension(file_app, s3_resource):
             s3_upload_fileObj(fileObj, 'path')
 
 
+def test_s3_upload_with_uppercase_extension(file_app, s3_resource):
+    with file_app.app_context():
+        fileObj = mock.MagicMock()
+        fileObj.filename = "TEST.PDF"
+        s3_upload_fileObj(fileObj, 'path')
+
+    s3_resource.Bucket().upload_fileobj.assert_called_once_with(
+        fileObj,
+        "path/TEST.PDF"
+    )
+
+
 def test_s3_upload_no_request_files():
     request = mock.MagicMock()
     request.files = None

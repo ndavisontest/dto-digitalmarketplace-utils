@@ -6,7 +6,7 @@ from io import BytesIO
 
 
 def allowed_file(filename):
-    return filename.rsplit('.', 1)[1] in current_app.config.get('ALLOWED_EXTENSIONS')
+    return filename.lower().rsplit('.', 1)[1] in current_app.config.get('ALLOWED_EXTENSIONS')
 
 
 def s3_upload_file_from_request(request, key, path=''):
