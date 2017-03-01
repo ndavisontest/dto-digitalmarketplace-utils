@@ -21,7 +21,8 @@ _GOV_EMAIL_DOMAINS = [
     'melbournewater.com.au',
     'tourism.australia.com',
     'victrack.com.au',
-    'auspost.com.au'
+    'auspost.com.au',
+    'mav.asn.au'
 ]
 
 _GOV_EMAILS = [
