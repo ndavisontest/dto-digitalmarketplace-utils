@@ -22,7 +22,8 @@ _GOV_EMAIL_DOMAINS = [
     'tourism.australia.com',
     'victrack.com.au',
     'auspost.com.au',
-    'mav.asn.au'
+    'mav.asn.au',
+    'healthdirect.org.au'
 ]
 
 _GOV_EMAILS = [
