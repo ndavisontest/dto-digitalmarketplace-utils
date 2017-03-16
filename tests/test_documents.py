@@ -191,42 +191,6 @@ class TestUploadDocument(unittest.TestCase):
                 mock_file('file.pdf', 1)
             ))
 
-    def test_document_upload_with_other_bucket_short_name(self):
-        uploader = mock.Mock(bucket_short_name="submissions")
-        with freeze_time('2015-01-02 04:05:00'):
-            self.assertEquals(
-                upload_document(
-                    uploader,
-                    'http://assets',
-                    {'id': "123", 'supplierCode': 5, 'frameworkSlug': 'g-cloud-6'},
-                    "pricingDocumentURL",
-                    mock_file('file.pdf', 1)
-                ),
-                'http://assets/g-cloud-6/submissions/5/123-pricing-document-2015-01-02-0405.pdf'
-            )
-
-        uploader.save.assert_called_once_with(
-            'g-cloud-6/submissions/5/123-pricing-document-2015-01-02-0405.pdf',
-            mock.ANY,
-            acl='public-read'
-        )
-
-    def test_document_upload_with_invalid_short_bucket_name(self):
-        uploader = mock.Mock(bucket_short_name="invalid")
-        with pytest.raises(AssertionError):
-            self.assertEquals(
-                upload_document(
-                    uploader,
-                    'http://assets',
-                    {'id': "123", 'supplierCode': 5, 'frameworkSlug': 'g-cloud-6'},
-                    "pricingDocumentURL",
-                    mock_file('file.pdf', 1)
-                ),
-                'http://assets/g-cloud-6/submissions/5/123-pricing-document-2015-01-02-0405.pdf'
-            )
-
-        assert not uploader.save.called
-
 
 class TestUploadServiceDocuments(object):
     def setup(self):

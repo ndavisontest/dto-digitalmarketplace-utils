@@ -73,11 +73,10 @@ def upload_document(uploader, documents_url, service, field, file_contents, publ
              failed
 
     """
-    assert uploader.bucket_short_name in ['documents', 'submissions']
 
     file_path = generate_file_name(
         service['frameworkSlug'],
-        uploader.bucket_short_name,
+        'documents',  # uploader.bucket_short_name,
         service['supplierCode'],
         service['id'],
         field,
@@ -100,7 +99,6 @@ def upload_document(uploader, documents_url, service, field, file_contents, publ
 
 
 def upload_service_documents(uploader, documents_url, service, request_files, section, public=True):
-    assert uploader.bucket_short_name in ['documents', 'submissions']
 
     files = {field: request_files[field] for field in section.get_question_ids(type="upload")
              if field in request_files}
@@ -183,6 +181,7 @@ def generate_file_name(framework_slug, bucket_short_name, supplier_code, service
         'termsAndConditionsDocumentURL': 'terms-and-conditions',
         'sfiaRateDocumentURL': 'sfia-rate-card',
         'pricingDocumentURL': 'pricing-document',
+        'attachedDocumentURL': 'attachment'
     }
 
     return '{}/{}/{}/{}-{}-{}{}'.format(
