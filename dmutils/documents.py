@@ -26,10 +26,13 @@ def filter_empty_files(files):
     :return: a dictionary of files with all empty files removed
 
     """
-    return {
-        key: contents for key, contents in files.items()
-        if file_is_not_empty(contents)
-    }
+    result = {}
+    for key, contents in files.items():
+        # filter empty files
+        contents = [x for x in contents if file_is_not_empty(x)]
+        if len(contents) > 0:
+            result[key] = contents
+    return result
 
 
 def validate_documents(files):
@@ -46,11 +49,12 @@ def validate_documents(files):
 
     """
     errors = {}
-    for field, contents in files.items():
-        if not file_is_open_document_format(contents):
-            errors[field] = 'file_is_open_document_format'
-        elif not file_is_less_than_5mb(contents):
-            errors[field] = 'file_is_less_than_5mb'
+    for field in files.keys():
+        for x in files[field]:
+            if not file_is_open_document_format(x):
+                errors[field] = 'file_is_open_document_format'
+            elif not file_is_less_than_5mb(x):
+                errors[field] = 'file_is_less_than_5mb'
 
     return errors
 
@@ -100,7 +104,7 @@ def upload_document(uploader, documents_url, service, field, file_contents, publ
 
 def upload_service_documents(uploader, documents_url, service, request_files, section, public=True):
 
-    files = {field: request_files[field] for field in section.get_question_ids(type="upload")
+    files = {field: request_files.getlist(field) for field in section.get_question_ids(type="upload")
              if field in request_files}
     files = filter_empty_files(files)
     errors = validate_documents(files)
@@ -112,14 +116,17 @@ def upload_service_documents(uploader, documents_url, service, request_files, se
         return {}, {}
 
     for field, contents in files.items():
-        url = upload_document(
-            uploader, documents_url, service, field, contents,
-            public=public)
+        for i, content in enumerate(contents):
+            file_service = service.copy()
+            file_service['id'] = "{}-{}".format(service['id'], i)
+            url = upload_document(
+                uploader, documents_url, file_service, field, content,
+                public=public)
 
-        if not url:
-            errors[field] = 'file_can_be_saved'
-        else:
-            files[field] = url
+            if not url:
+                errors[field] = 'file_can_be_saved'
+            else:
+                files[field][i] = url
 
     return files, errors
 
