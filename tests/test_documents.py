@@ -4,6 +4,7 @@ import unittest
 import mock
 import pytest
 from freezegun import freeze_time
+from werkzeug.datastructures import ImmutableMultiDict
 
 from .helpers import mock_file
 from dmutils.s3 import S3ResponseError
@@ -65,8 +66,8 @@ class TestValidateDocuments(unittest.TestCase):
         file2 = mock_file('file2', 0)
         file3 = mock_file('file3', 10)
         self.assertEquals(
-            filter_empty_files({'f1': file1, 'f2': file2, 'f3': file3}),
-            {'f1': file1, 'f3': file3}
+            filter_empty_files({'f1': [file1], 'f2': [file2], 'f3': [file3]}),
+            {'f1': [file1], 'f3': [file3]}
         )
 
     def test_file_is_less_than_5mb(self):
@@ -101,34 +102,34 @@ class TestValidateDocuments(unittest.TestCase):
 
     def test_validate_documents(self):
         self.assertEqual(
-            validate_documents({'file1': mock_file('file1.pdf', 1)}),
+            validate_documents({'file1': [mock_file('file1.pdf', 1)]}),
             {}
         )
 
     def test_validate_documents_not_open_document_format(self):
         self.assertEqual(
-            validate_documents({'file1': mock_file('file1.doc', 1)}),
+            validate_documents({'file1': [mock_file('file1.doc', 1)]}),
             {'file1': 'file_is_open_document_format'}
         )
 
     def test_validate_documents_not_less_than_5mb(self):
         self.assertEqual(
-            validate_documents({'file1': mock_file('file1.pdf', 5400001)}),
+            validate_documents({'file1': [mock_file('file1.pdf', 5400001)]}),
             {'file1': 'file_is_less_than_5mb'}
         )
 
     def test_validate_documents_not_open_document_above_5mb(self):
         self.assertEqual(
-            validate_documents({'file1': mock_file('file1.doc', 5400001)}),
+            validate_documents({'file1': [mock_file('file1.doc', 5400001)]}),
             {'file1': 'file_is_open_document_format'}
         )
 
     def test_validate_multiple_documents(self):
         self.assertEqual(
             validate_documents({
-                'file1': mock_file('file1.pdf', 5400001),
-                'file2': mock_file('file1.pdf', 1),
-                'file3': mock_file('file1.doc', 1),
+                'file1': [mock_file('file1.pdf', 5400001)],
+                'file2': [mock_file('file1.pdf', 1)],
+                'file3': [mock_file('file1.doc', 1)],
             }),
             {
                 'file1': 'file_is_less_than_5mb',
@@ -205,7 +206,7 @@ class TestUploadServiceDocuments(object):
         self.documents_url = 'http://localhost'
 
     def test_upload_service_documents(self):
-        request_files = {'pricingDocumentURL': mock_file('q1.pdf', 100)}
+        request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.pdf', 100)})
 
         with freeze_time('2015-10-04 14:36:05'):
             files, errors = upload_service_documents(
@@ -213,13 +214,28 @@ class TestUploadServiceDocuments(object):
                 request_files, self.section)
 
         self.uploader.save.assert_called_with(
-            'g-cloud-7/documents/12345/654321-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='public-read')
+            'g-cloud-7/documents/12345/654321-0-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='public-read')
+
+        assert 'pricingDocumentURL' in files
+        assert len(errors) == 0
+
+    def test_upload_multiple_service_documents(self):
+        request_files = ImmutableMultiDict([('pricingDocumentURL', mock_file('q1.pdf', 100)),
+                                            ('pricingDocumentURL', mock_file('q2.pdf', 100))])
+
+        with freeze_time('2015-10-04 14:36:05'):
+            files, errors = upload_service_documents(
+                self.uploader, self.documents_url, self.service,
+                request_files, self.section)
+
+        self.uploader.save.assert_called_with(
+            'g-cloud-7/documents/12345/654321-1-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='public-read')
 
         assert 'pricingDocumentURL' in files
         assert len(errors) == 0
 
     def test_upload_private_service_documents(self):
-        request_files = {'pricingDocumentURL': mock_file('q1.pdf', 100)}
+        request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.pdf', 100)})
 
         with freeze_time('2015-10-04 14:36:05'):
             files, errors = upload_service_documents(
@@ -228,13 +244,13 @@ class TestUploadServiceDocuments(object):
                 public=False)
 
         self.uploader.save.assert_called_with(
-            'g-cloud-7/documents/12345/654321-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='private')
+            'g-cloud-7/documents/12345/654321-0-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='private')
 
         assert 'pricingDocumentURL' in files
         assert len(errors) == 0
 
     def test_empty_files_are_filtered(self):
-        request_files = {'pricingDocumentURL': mock_file('q1.pdf', 0)}
+        request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.pdf', 0)})
 
         files, errors = upload_service_documents(
             self.uploader, self.documents_url, self.service,
@@ -244,7 +260,7 @@ class TestUploadServiceDocuments(object):
         assert len(errors) == 0
 
     def test_only_files_in_section_are_uploaded(self):
-        request_files = {'serviceDefinitionDocumentURL': mock_file('q1.pdf', 100)}
+        request_files = ImmutableMultiDict({'serviceDefinitionDocumentURL': mock_file('q1.pdf', 100)})
 
         files, errors = upload_service_documents(
             self.uploader, self.documents_url, self.service,
@@ -254,7 +270,7 @@ class TestUploadServiceDocuments(object):
         assert len(errors) == 0
 
     def test_upload_with_validation_errors(self):
-        request_files = {'pricingDocumentURL': mock_file('q1.bad', 100)}
+        request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.bad', 100)})
 
         files, errors = upload_service_documents(
             self.uploader, self.documents_url, self.service,

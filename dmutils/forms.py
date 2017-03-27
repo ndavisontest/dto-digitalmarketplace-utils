@@ -23,7 +23,8 @@ _GOV_EMAIL_DOMAINS = [
     'victrack.com.au',
     'auspost.com.au',
     'mav.asn.au',
-    'healthdirect.org.au'
+    'healthdirect.org.au',
+    'unitywater.com'
 ]
 
 _GOV_EMAILS = [
