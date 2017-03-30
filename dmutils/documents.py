@@ -1,6 +1,8 @@
 import os
 import datetime
 import rollbar
+import boto3
+from flask import current_app
 
 try:
     import urlparse
@@ -91,7 +93,7 @@ def upload_document(uploader, documents_url, service, field, file_contents, publ
     acl = 'public-read' if public else 'private'
 
     try:
-        uploader.save(file_path, file_contents, acl=acl)
+        uploader.upload_fileobj(file_contents, file_path, {'ACL': acl})
     except S3ResponseError:
         rollbar.report_exc_info()
         return False
@@ -104,13 +106,14 @@ def upload_document(uploader, documents_url, service, field, file_contents, publ
     return full_url
 
 
-def upload_service_documents(uploader, documents_url, service, request_files, section, public=True):
+def upload_service_documents(bucket, documents_url, service, request_files, section, public=True):
 
     files = {field: request_files.getlist(field) for field in section.get_question_ids(type="upload")
              if field in request_files}
     files = filter_empty_files(files)
     errors = validate_documents(files)
-
+    s3 = boto3.resource('s3')
+    uploader = s3.Bucket(bucket)
     if errors:
         return None, errors
 

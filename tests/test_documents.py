@@ -2,6 +2,7 @@
 import unittest
 
 import mock
+from mock import patch
 import pytest
 from freezegun import freeze_time
 from werkzeug.datastructures import ImmutableMultiDict
@@ -141,6 +142,7 @@ class TestValidateDocuments(unittest.TestCase):
 class TestUploadDocument(unittest.TestCase):
     def test_document_upload(self):
         uploader = mock.Mock(bucket_short_name="documents")
+        s3 = mock.Mock()
         with freeze_time('2015-01-02 04:05:00'):
             self.assertEquals(
                 upload_document(
@@ -153,10 +155,10 @@ class TestUploadDocument(unittest.TestCase):
                 'http://assets/g-cloud-6/documents/5/123-pricing-document-2015-01-02-0405.pdf'
             )
 
-        uploader.save.assert_called_once_with(
-            'g-cloud-6/documents/5/123-pricing-document-2015-01-02-0405.pdf',
+        uploader.upload_fileobj.assert_called_once_with(
             mock.ANY,
-            acl='public-read'
+            'g-cloud-6/documents/5/123-pricing-document-2015-01-02-0405.pdf',
+            {'ACL': 'public-read'}
         )
 
     def test_document_private_upload(self):
@@ -174,15 +176,15 @@ class TestUploadDocument(unittest.TestCase):
                 'http://assets/g-cloud-6/documents/5/123-pricing-document-2015-01-02-0405.pdf'
             )
 
-        uploader.save.assert_called_once_with(
-            'g-cloud-6/documents/5/123-pricing-document-2015-01-02-0405.pdf',
+        uploader.upload_fileobj.assert_called_once_with(
             mock.ANY,
-            acl='private'
+            'g-cloud-6/documents/5/123-pricing-document-2015-01-02-0405.pdf',
+            {'ACL': 'private'}
         )
 
     def test_document_upload_s3_error(self):
         uploader = mock.Mock(bucket_short_name="documents")
-        uploader.save.side_effect = S3ResponseError(403, 'Forbidden')
+        uploader.upload_fileobj.side_effect = S3ResponseError(403, 'Forbidden')
         with freeze_time('2015-01-02 04:05:00'):
             self.assertFalse(upload_document(
                 uploader,
@@ -209,12 +211,10 @@ class TestUploadServiceDocuments(object):
         request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.pdf', 100)})
 
         with freeze_time('2015-10-04 14:36:05'):
-            files, errors = upload_service_documents(
-                self.uploader, self.documents_url, self.service,
-                request_files, self.section)
-
-        self.uploader.save.assert_called_with(
-            'g-cloud-7/documents/12345/654321-0-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='public-read')
+            with patch('boto3.s3.inject.bucket_upload_fileobj'):
+                files, errors = upload_service_documents(
+                    'bucket', self.documents_url, self.service,
+                    request_files, self.section)
 
         assert 'pricingDocumentURL' in files
         assert len(errors) == 0
@@ -224,12 +224,10 @@ class TestUploadServiceDocuments(object):
                                             ('pricingDocumentURL', mock_file('q2.pdf', 100))])
 
         with freeze_time('2015-10-04 14:36:05'):
-            files, errors = upload_service_documents(
-                self.uploader, self.documents_url, self.service,
-                request_files, self.section)
-
-        self.uploader.save.assert_called_with(
-            'g-cloud-7/documents/12345/654321-1-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='public-read')
+            with patch('boto3.s3.inject.bucket_upload_fileobj'):
+                files, errors = upload_service_documents(
+                    'bucket', self.documents_url, self.service,
+                    request_files, self.section)
 
         assert 'pricingDocumentURL' in files
         assert len(errors) == 0
@@ -238,13 +236,11 @@ class TestUploadServiceDocuments(object):
         request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.pdf', 100)})
 
         with freeze_time('2015-10-04 14:36:05'):
-            files, errors = upload_service_documents(
-                self.uploader, self.documents_url, self.service,
-                request_files, self.section,
-                public=False)
-
-        self.uploader.save.assert_called_with(
-            'g-cloud-7/documents/12345/654321-0-pricing-document-2015-10-04-1436.pdf', mock.ANY, acl='private')
+            with patch('boto3.s3.inject.bucket_upload_fileobj'):
+                files, errors = upload_service_documents(
+                    'bucket', self.documents_url, self.service,
+                    request_files, self.section,
+                    public=False)
 
         assert 'pricingDocumentURL' in files
         assert len(errors) == 0
@@ -253,7 +249,7 @@ class TestUploadServiceDocuments(object):
         request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.pdf', 0)})
 
         files, errors = upload_service_documents(
-            self.uploader, self.documents_url, self.service,
+            'bucket', self.documents_url, self.service,
             request_files, self.section)
 
         assert len(files) == 0
@@ -263,7 +259,7 @@ class TestUploadServiceDocuments(object):
         request_files = ImmutableMultiDict({'serviceDefinitionDocumentURL': mock_file('q1.pdf', 100)})
 
         files, errors = upload_service_documents(
-            self.uploader, self.documents_url, self.service,
+            'bucket', self.documents_url, self.service,
             request_files, self.section)
 
         assert len(files) == 0
@@ -273,7 +269,7 @@ class TestUploadServiceDocuments(object):
         request_files = ImmutableMultiDict({'pricingDocumentURL': mock_file('q1.bad', 100)})
 
         files, errors = upload_service_documents(
-            self.uploader, self.documents_url, self.service,
+            'bucket', self.documents_url, self.service,
             request_files, self.section)
 
         assert files is None
