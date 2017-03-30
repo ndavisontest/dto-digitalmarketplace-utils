@@ -1,5 +1,6 @@
 import os
 import datetime
+import rollbar
 
 try:
     import urlparse
@@ -92,6 +93,7 @@ def upload_document(uploader, documents_url, service, field, file_contents, publ
     try:
         uploader.save(file_path, file_contents, acl=acl)
     except S3ResponseError:
+        rollbar.report_exc_info()
         return False
 
     full_url = urlparse.urljoin(
