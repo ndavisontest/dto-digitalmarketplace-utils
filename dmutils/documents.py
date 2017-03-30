@@ -2,7 +2,6 @@ import os
 import datetime
 import rollbar
 import boto3
-from flask import current_app
 
 try:
     import urlparse

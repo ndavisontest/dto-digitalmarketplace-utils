@@ -142,7 +142,6 @@ class TestValidateDocuments(unittest.TestCase):
 class TestUploadDocument(unittest.TestCase):
     def test_document_upload(self):
         uploader = mock.Mock(bucket_short_name="documents")
-        s3 = mock.Mock()
         with freeze_time('2015-01-02 04:05:00'):
             self.assertEquals(
                 upload_document(
