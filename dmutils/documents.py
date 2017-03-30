@@ -217,7 +217,8 @@ def get_extension(filename):
 
 
 def get_signed_url(bucket, path, base_url):
-    url = bucket.get_signed_url(path)
+    s3 = boto3.client('s3')
+    url = s3.generate_presigned_url('get_object', Params={'Bucket': bucket, 'Key': path}, ExpiresIn=120)
     if url is not None:
         if base_url is not None:
             url = urlparse.urlparse(url)
