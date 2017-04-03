@@ -9,7 +9,7 @@ DATE_FORMAT = "%Y-%m-%d"
 DISPLAY_SHORT_DATE_FORMAT = '%-d %B'
 DISPLAY_DATE_FORMAT = '%A %-d %B %Y'
 DISPLAY_TIME_FORMAT = '%H:%M:%S'
-DISPLAY_DATETIME_FORMAT = '%A %-d %B %Y at %I:%M %p'
+DISPLAY_DATETIME_FORMAT = '%A %-d %B %Y at %-I%p'
 
 LOTS = [
     {
