@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import os
 import jinja2
+import rollbar
 
 import flask_featureflags
 from . import config, logging, force_https, request_id, formats, filters, rollbar_agent
@@ -107,6 +108,7 @@ def init_frontend_app(application, data_api_client, login_manager, template_dirs
                 current_app.logger.info(
                     u'csrf.invalid_token: Aborting request, user_id: {user_id}',
                     extra={'user_id': session.get('user_id', '<unknown')})
+                rollbar.report_message('csrf.invalid_token: Aborting request check_csrf_token()', 'error', request)
                 abort(400, 'Invalid CSRF token. Please try again.')
 
     @application.before_request
