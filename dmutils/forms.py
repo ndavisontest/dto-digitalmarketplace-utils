@@ -1,5 +1,6 @@
 # from datetime import timedelta
 from functools import wraps
+import rollbar
 import re
 
 from flask import abort, current_app, render_template, request, Response, session
@@ -136,6 +137,7 @@ def valid_csrf_or_abort():
     current_app.logger.info(
         u'csrf.invalid_token: Aborting request, user_id: {user_id}',
         extra={'user_id': session.get('user_id', '<unknown')})
+    rollbar.report_message('csrf.invalid_token: Aborting request valid_csrf_or_abort()', 'error', request)
     abort(400, 'Invalid CSRF token. Please try again.')
 
 
