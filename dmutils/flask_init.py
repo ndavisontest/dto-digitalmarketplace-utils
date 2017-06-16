@@ -3,6 +3,10 @@ from __future__ import absolute_import
 import os
 import jinja2
 import rollbar
+try:
+    from urllib import quote  # Python 2.X
+except ImportError:
+    from urllib.parse import quote  # Python 3+
 
 import flask_featureflags
 from . import config, logging, force_https, request_id, formats, filters, rollbar_agent
@@ -75,7 +79,8 @@ def init_app(
 
     @application.after_request
     def add_header(response):
-        response.headers['X-Frame-Options'] = 'DENY'
+        if not response.headers.get('X-Frame-Options'):
+            response.headers['X-Frame-Options'] = 'DENY'
         return response
 
 
@@ -163,6 +168,7 @@ def init_frontend_app(application, data_api_client, login_manager, template_dirs
         return Markup(filters.markdown_filter(data))
     application.add_template_filter(filters.format_links)
     application.add_template_filter(filters.smartjoin)
+    application.add_template_filter(quote)
 
     date_formatter = formats.DateFormatter(application.config['DM_TIMEZONE'])
     application.add_template_filter(date_formatter.timeformat)
