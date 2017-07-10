@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from dmutils.filters import markdown_filter, smartjoin, format_links
+from dmutils.filters import markdown_filter, smartjoin, format_links, nl2br
 
 
 def test_markdown_filter_produces_markup():
@@ -96,3 +96,12 @@ def test_multiple_urls():
 def test_no_links_no_change():
     text = 'There are no Greek Γ Δ Ε Ζ Η Θ Ι Κ Λ links.'
     assert format_links(text) == text
+
+
+def test_nl2br():
+    text = 'A\nB'
+    formatted_text = '<p>A<br>\nB</p>'
+    assert nl2br(None, text) == formatted_text
+    text = 'A\n\nB'
+    formatted_text = '<p>A</p>\n\n<p>B</p>'
+    assert nl2br(None, text) == formatted_text

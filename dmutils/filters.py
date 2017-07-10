@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import re
 from markdown import markdown
 from flask import Markup
+from jinja2 import evalcontextfilter, escape
 import pendulum
 
 
@@ -68,3 +69,14 @@ def timesince(before, now=None, default="just now"):
         return before.diff_for_humans()
 
     return default
+
+
+@evalcontextfilter
+def nl2br(eval_ctx, value):
+    # http://jinja.pocoo.org/docs/2.9/api/#custom-filters
+    _paragraph_re = re.compile(r'(?:\r\n|\r|\n){2,}')
+    result = u'\n\n'.join(u'<p>%s</p>' % p.replace('\n', Markup('<br>\n'))
+                          for p in _paragraph_re.split(escape(value)))
+    if eval_ctx and eval_ctx.autoescape:
+        result = Markup(result)
+    return result

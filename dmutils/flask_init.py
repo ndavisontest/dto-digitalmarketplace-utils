@@ -168,6 +168,7 @@ def init_frontend_app(application, data_api_client, login_manager, template_dirs
         return Markup(filters.markdown_filter(data))
     application.add_template_filter(filters.format_links)
     application.add_template_filter(filters.smartjoin)
+    application.add_template_filter(filters.nl2br)
     application.add_template_filter(quote)
 
     date_formatter = formats.DateFormatter(application.config['DM_TIMEZONE'])
