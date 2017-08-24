@@ -74,9 +74,10 @@ def timesince(before, now=None, default="just now"):
 @evalcontextfilter
 def nl2br(eval_ctx, value):
     # http://jinja.pocoo.org/docs/2.9/api/#custom-filters
+    value = value.strip()
     _paragraph_re = re.compile(r'(?:\r\n|\r|\n){2,}')
-    result = u'\n\n'.join(u'<p>%s</p>' % p.replace('\n', Markup('<br>\n'))
-                          for p in _paragraph_re.split(escape(value)))
+    result = u'\n'.join(u'<p>%s</p>' % p.strip().replace('\n', Markup('<br>\n') if p.strip() != '' else '')
+                        for p in _paragraph_re.split(escape(value)))
     if eval_ctx and eval_ctx.autoescape:
         result = Markup(result)
     return result
