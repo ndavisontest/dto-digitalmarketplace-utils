@@ -103,5 +103,5 @@ def test_nl2br():
     formatted_text = '<p>A<br>\nB</p>'
     assert nl2br(None, text) == formatted_text
     text = 'A\n\nB'
-    formatted_text = '<p>A</p>\n\n<p>B</p>'
+    formatted_text = '<p>A</p>\n<p>B</p>'
     assert nl2br(None, text) == formatted_text

@@ -129,6 +129,8 @@ def generate_token(data, secret_key, salt):
 
 def decode_token(token, secret_key, salt, max_age_in_seconds=ONE_DAY_IN_SECONDS):
     fernet = Fernet(to_bytes(secret_key))
+    # fix missing padding where token length is not a multiple of 4
+    token = to_bytes((str(token.decode('ascii')) + ("=" * ((4 - len(token) % 4) % 4)).encode()))
     cleartext = fernet.decrypt(token, ttl=max_age_in_seconds)
     token_salt, json_data = cleartext.split(b'\0', 1)
     if token_salt != to_bytes(salt):
