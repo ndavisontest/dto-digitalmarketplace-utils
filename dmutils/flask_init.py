@@ -114,7 +114,9 @@ def init_frontend_app(application, data_api_client, login_manager, template_dirs
                     u'csrf.invalid_token: Aborting request, user_id: {user_id}',
                     extra={'user_id': session.get('user_id', '<unknown')})
                 rollbar.report_message('csrf.invalid_token: Aborting request check_csrf_token()', 'error', request)
-                abort(400, 'Invalid CSRF token. Please try again.')
+                abort(400, 'Your session has timed out, please delete your cookies and restart your browser.'
+                           '<br> If you continue to experience this issue, '
+                           'please <a href="https://marketplace1.zendesk.com/hc/en-gb/requests/new">contact us</a>')
 
     @application.before_request
     def refresh_session():
