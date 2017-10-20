@@ -19,7 +19,7 @@ def _hook(request, data):
 
 
 def init_app(app):
-    if app.config.get('ROLLBAR_TOKEN'):
+    if app.config.get('ROLLBAR_TOKEN') and not app.config.get('DEBUG', True):
         rollbar.init(
             # access token for the demo app: https://rollbar.com/demo
             app.config['ROLLBAR_TOKEN'],
