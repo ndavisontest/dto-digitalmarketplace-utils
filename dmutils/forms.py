@@ -25,7 +25,8 @@ _GOV_EMAIL_DOMAINS = [
     'auspost.com.au',
     'mav.asn.au',
     'healthdirect.org.au',
-    'unitywater.com'
+    'unitywater.com',
+    'csiro.au'
 ]
 
 _GOV_EMAILS = [
