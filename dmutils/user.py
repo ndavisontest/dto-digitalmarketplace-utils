@@ -26,7 +26,7 @@ def user_has_role(user, role):
 
 class User():
     def __init__(self, user_id, email_address, supplier_code, supplier_name,
-                 locked, active, name, role, terms_accepted_at, application_id=None):
+                 locked, active, name, role, terms_accepted_at, application_id=None, frameworks=None):
         self.id = user_id
         self.email_address = email_address
         self.name = name
@@ -37,6 +37,7 @@ class User():
         self.active = active
         self.terms_accepted_at = terms_accepted_at
         self.application_id = application_id
+        self.frameworks = frameworks
 
     @property
     def is_authenticated(self):
