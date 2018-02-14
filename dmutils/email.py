@@ -72,7 +72,12 @@ def send_email(to_email_addresses, email_body, subject, from_email, from_name, r
             email_body = to_bytes(email_body)
             subject = to_bytes(subject)
 
-            email_client = boto3.client('ses')
+            email_client = boto3.client(
+                'ses',
+                region_name=getenv('AWS_REGION'),
+                aws_access_key_id=getenv('AWS_ACCESS_KEY_ID'),
+                aws_secret_access_key=getenv('AWS_SECRET_ACCESS_KEY')
+            )
 
             destination_addresses = {
                 'ToAddresses': to_email_addresses,
