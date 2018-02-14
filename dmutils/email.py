@@ -16,6 +16,7 @@ import boto3
 import botocore.exceptions
 from flask import current_app
 from flask._compat import string_types
+from os import getenv
 
 import pendulum
 from cryptography.fernet import Fernet, InvalidToken
