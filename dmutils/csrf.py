@@ -27,6 +27,9 @@ def check_valid_csrf():
         request.form.get(TOKEN, None),
         request.headers.get(REACT_HEADER_NAME, None)
     ]
+    json = request.get_json()
+    if json:
+        tokens_received.append(json.get(TOKEN, None))
     tokens_received = set(filter(None, tokens_received))
 
     tokens_from_session = [
