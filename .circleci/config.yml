@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:2.7.15-stretch
+      - image: circleci/python@sha256:4a89a031beecca074592ee0f76e00fc3c286de43d520c3a5ff5dfbd9cac73dca
         environment:
           TZ: "/usr/share/zoneinfo/Australia/Sydney"
     steps:
