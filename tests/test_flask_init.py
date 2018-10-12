@@ -1,6 +1,6 @@
 from flask import render_template_string
 import flask_featureflags
-from flask_cache import Cache
+from flask_caching import Cache
 
 from dmutils.flask_init import pluralize, init_manager
 from dmutils.forms import FakeCsrf
