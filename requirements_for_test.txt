@@ -18,7 +18,6 @@ cookies==2.2.1
 coverage==4.0.3
 cryptography==2.3
 docutils==0.14
--e git+git@github.com:AusDTO/dto-digitalmarketplace-utils.git@1729ff47cc0669e142c8ad49c8c2c2cca113619d#egg=dto_digitalmarketplace_utils
 enum34==1.1.6
 Flask==1.0.2
 Flask-Bcrypt==0.7.1

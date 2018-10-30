@@ -111,7 +111,10 @@ def upload_service_documents(bucket, documents_url, service, request_files, sect
              if field in request_files}
     files = filter_empty_files(files)
     errors = validate_documents(files)
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource(
+        's3',
+        endpoint_url=os.getenv('AWS_S3_URL')
+    )
     uploader = s3.Bucket(bucket)
     if errors:
         return None, errors
@@ -216,7 +219,10 @@ def get_extension(filename):
 
 
 def get_signed_url(bucket, path, base_url):
-    s3 = boto3.client('s3')
+    s3 = boto3.client(
+        's3',
+        endpoint_url=os.getenv('AWS_S3_URL')
+    )
     url = s3.generate_presigned_url('get_object', Params={'Bucket': bucket, 'Key': path}, ExpiresIn=120)
     if url is not None:
         if base_url is not None:

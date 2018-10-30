@@ -26,7 +26,10 @@ def s3_upload_fileObj(fileObj, path=''):
         raise Exception('Invalid file extension: {}'.format(fileObj.filename))
 
     filename = secure_filename(fileObj.filename)
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource(
+        's3',
+        endpoint_url=os.getenv('AWS_S3_URL')
+    )
     bucket = s3.Bucket(current_app.config.get('S3_BUCKET_NAME'))
 
     bucket.upload_fileobj(fileObj, os.path.join(path, filename))
@@ -37,7 +40,10 @@ def s3_upload_fileObj(fileObj, path=''):
 def s3_download_file(file, path):
     filename = secure_filename(file)
 
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource(
+        's3',
+        endpoint_url=os.getenv('AWS_S3_URL')
+    )
     bucket = s3.Bucket(current_app.config.get('S3_BUCKET_NAME'))
 
     data = BytesIO()

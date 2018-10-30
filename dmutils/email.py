@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 import hashlib
 import json
 import six
-from string import Template
 import struct
 import sys
+import codecs
 import textwrap
 
 import boto3
@@ -50,69 +50,71 @@ def send_email(to_email_addresses, email_body, subject, from_email, from_name, r
     if current_app.config.get('DM_SEND_EMAIL_TO_STDERR', False):
         email_body = to_text(email_body)
         subject = to_text(subject)
+        reload(sys)
+        sys.setdefaultencoding('utf8')
 
-        template = Template(textwrap.dedent("""\
-            To: $to
-            Subject: $subject
-            From: $from_line
-            Reply-To: $reply_to
+        print ("""
+------------------------
+To: {to}
+Subject: {subject}
+From: {from_line}
+Reply-To: {reply_to}
 
-            $body"""))
-
-        subbed = template.substitute(
+{body}
+------------------------
+        """.format(
             to=', '.join(to_email_addresses),
             subject=subject,
             from_line='{} <{}>'.format(from_name, from_email),
             reply_to=reply_to,
             body=email_body
+        ))
+
+    try:
+        email_body = to_bytes(email_body)
+        subject = to_bytes(subject)
+
+        email_client = boto3.client(
+            'ses',
+            region_name=getenv('AWS_REGION'),
+            aws_access_key_id=getenv('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=getenv('AWS_SECRET_ACCESS_KEY'),
+            endpoint_url=getenv('AWS_SES_URL')
         )
-        sys.stderr.write(subbed)
 
-    else:
-        try:
-            email_body = to_bytes(email_body)
-            subject = to_bytes(subject)
+        destination_addresses = {
+            'ToAddresses': to_email_addresses,
+        }
+        if 'DM_EMAIL_BCC_ADDRESS' in current_app.config:
+            destination_addresses['BccAddresses'] = [current_app.config['DM_EMAIL_BCC_ADDRESS']]
 
-            email_client = boto3.client(
-                'ses',
-                region_name=getenv('AWS_REGION'),
-                aws_access_key_id=getenv('AWS_ACCESS_KEY_ID'),
-                aws_secret_access_key=getenv('AWS_SECRET_ACCESS_KEY')
-            )
+        return_address = current_app.config.get('DM_EMAIL_RETURN_ADDRESS')
 
-            destination_addresses = {
-                'ToAddresses': to_email_addresses,
-            }
-            if 'DM_EMAIL_BCC_ADDRESS' in current_app.config:
-                destination_addresses['BccAddresses'] = [current_app.config['DM_EMAIL_BCC_ADDRESS']]
-
-            return_address = current_app.config.get('DM_EMAIL_RETURN_ADDRESS')
-
-            result = email_client.send_email(
-                Source=u"{} <{}>".format(from_name, from_email),
-                Destination=destination_addresses,
-                Message={
-                    'Subject': {
-                        'Data': subject,
-                        'Charset': 'UTF-8'
-                    },
-                    'Body': {
-                        'Html': {
-                            'Data': email_body,
-                            'Charset': 'UTF-8'
-                        }
-                    }
+        result = email_client.send_email(
+            Source=u"{} <{}>".format(from_name, from_email),
+            Destination=destination_addresses,
+            Message={
+                'Subject': {
+                    'Data': subject,
+                    'Charset': 'UTF-8'
                 },
-                ReturnPath=return_address or reply_to or from_email,
-                ReplyToAddresses=[reply_to or from_email],
-            )
-        except botocore.exceptions.ClientError as e:
-            current_app.logger.error("An SES error occurred: {error}", extra={'error': e.response['Error']['Message']})
-            raise EmailError(e.response['Error']['Message'])
+                'Body': {
+                    'Html': {
+                        'Data': email_body,
+                        'Charset': 'UTF-8'
+                    }
+                }
+            },
+            ReturnPath=return_address or reply_to or from_email,
+            ReplyToAddresses=[reply_to or from_email],
+        )
+    except botocore.exceptions.ClientError as e:
+        current_app.logger.error("An SES error occurred: {error}", extra={'error': e.response['Error']['Message']})
+        raise EmailError(e.response['Error']['Message'])
 
-        current_app.logger.info("Sent email: id={id}, email={email_hash}",
-                                extra={'id': result['ResponseMetadata']['RequestId'],
-                                       'email_hash': hash_email(to_email_addresses[0])})
+    current_app.logger.info("Sent email: id={id}, email={email_hash}",
+                            extra={'id': result['ResponseMetadata']['RequestId'],
+                                   'email_hash': hash_email(to_email_addresses[0])})
 
 
 def generate_token(data, secret_key, salt):
