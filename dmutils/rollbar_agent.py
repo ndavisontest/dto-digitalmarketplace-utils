@@ -15,7 +15,15 @@ def _hook(request, data):
         data['context'] = str(request.url_rule)
 
     if hasattr(current_app, 'login_manager') and current_user:
-        data['person'] = {"id": current_user.id, "username": current_user.name, "email": current_user.email_address}
+        person = {}
+        if hasattr(current_user, 'id'):
+            person['id'] = current_user.id
+        if hasattr(current_user, 'name'):
+            person['username'] = current_user.name
+        if hasattr(current_user, 'email_address'):
+            person['email'] = current_user.email_address
+
+        data['person'] = person
 
 
 def init_app(app):
