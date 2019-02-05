@@ -9,6 +9,8 @@ DATE_FORMAT = "%Y-%m-%d"
 DISPLAY_SHORT_DATE_FORMAT = '%-d %B'
 DISPLAY_DATE_FORMAT = '%A %-d %B %Y'
 DISPLAY_TIME_FORMAT = '%H:%M:%S'
+DISPLAY_MEDIUM_TIME_FORMAT = '%H:%M'
+DISPLAY_MEDIUM_DATE_FORMAT = '%d-%m-%Y'
 DISPLAY_DATETIME_FORMAT = '%A %-d %B %Y at %-I%p (in Canberra)'
 
 LOTS = [
@@ -59,6 +61,12 @@ class DateFormatter(object):
 
     def datetimeformat(self, value):
         return self._format(value, DISPLAY_DATETIME_FORMAT)
+
+    def mediumtimeformat(self, value):
+        return self._format(value, DISPLAY_MEDIUM_TIME_FORMAT)
+
+    def mediumdateformat(self, value):
+        return self._format(value, DISPLAY_MEDIUM_DATE_FORMAT)
 
 
 def lot_to_lot_case(lot_to_check):

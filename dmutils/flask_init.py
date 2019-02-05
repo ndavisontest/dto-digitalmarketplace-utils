@@ -178,6 +178,8 @@ def init_frontend_app(application, data_api_client, login_manager, template_dirs
     application.add_template_filter(date_formatter.shortdateformat)
     application.add_template_filter(date_formatter.dateformat)
     application.add_template_filter(date_formatter.datetimeformat)
+    application.add_template_filter(date_formatter.mediumtimeformat)
+    application.add_template_filter(date_formatter.mediumdateformat)
 
 
 def pluralize(count, singular, plural):
