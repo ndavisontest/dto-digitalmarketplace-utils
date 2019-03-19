@@ -26,7 +26,8 @@ def user_has_role(user, role):
 
 class User():
     def __init__(self, user_id, email_address, supplier_code, supplier_name,
-                 locked, active, name, role, terms_accepted_at, application_id=None, frameworks=None):
+                 locked, active, name, role, terms_accepted_at, application_id=None, frameworks=None,
+                 notification_count=None):
         self.id = user_id
         self.email_address = email_address
         self.name = name
@@ -38,6 +39,7 @@ class User():
         self.terms_accepted_at = terms_accepted_at
         self.application_id = application_id
         self.frameworks = frameworks
+        self.notification_count = notification_count
 
     @property
     def is_authenticated(self):
@@ -76,6 +78,7 @@ class User():
             'supplierName': self.supplier_name,
             'locked': self.locked,
             'application_id': self.application_id,
+            'notificationCount': self.notification_count
         }
 
     @staticmethod
@@ -84,6 +87,7 @@ class User():
         supplier_code = None
         supplier_name = None
         application_id = None
+        notification_count = None
         terms_accepted_at = pendulum.parse(user['termsAcceptedAt']).in_tz('UTC')
 
         try:
@@ -92,6 +96,7 @@ class User():
             if supplier:
                 supplier_code = supplier.get('supplierCode')
                 supplier_name = supplier.get('name')
+                notification_count = supplier.get('notificationCount')
         except KeyError:
             pass
 
@@ -109,7 +114,8 @@ class User():
             name=user['name'],
             role=user['role'],
             terms_accepted_at=terms_accepted_at,
-            application_id=application_id
+            application_id=application_id,
+            notification_count=notification_count
         )
 
     @staticmethod
