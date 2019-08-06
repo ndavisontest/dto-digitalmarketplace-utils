@@ -27,7 +27,7 @@ def user_has_role(user, role):
 class User():
     def __init__(self, user_id, email_address, supplier_code, supplier_name,
                  locked, active, name, role, terms_accepted_at, application_id=None, frameworks=None,
-                 notification_count=None):
+                 notification_count=None, teams=None):
         self.id = user_id
         self.email_address = email_address
         self.name = name
@@ -40,6 +40,7 @@ class User():
         self.application_id = application_id
         self.frameworks = frameworks
         self.notification_count = notification_count
+        self.teams = teams if teams else []
 
     @property
     def is_authenticated(self):
@@ -63,6 +64,44 @@ class User():
     def has_any_role(self, *roles):
         return any(self.has_role(role) for role in roles)
 
+    def is_part_of_team(self):
+        if self.has_role('buyer'):
+            if self.teams:
+                return True
+        return False
+
+    def is_team_lead(self, team_id=None):
+        if not self.is_part_of_team():
+            return False
+
+        if team_id:
+            team = self.get_team(team_id)
+            return True if team and team.get('is_team_lead', False) else False
+        else:
+            return all(t.get('is_team_lead', False) for t in self.teams)
+
+    def has_permission(self, permission, team_id=None):
+        if not self.is_part_of_team():
+            return True
+        if self.is_team_lead(team_id):
+            return True
+        if team_id:
+            team = self.get_team(team_id)
+            return True if team and permission in team.get('permissions', []) else False
+        else:
+            return all(permission in t.get('permissions', []) for t in self.teams)
+
+    def get_team(self, team_id=None):
+        if not self.is_part_of_team():
+            return None
+
+        if self.teams and len(self.teams) > 0:
+            if team_id:
+                return next(iter([t for t in self.teams if t.get('id') == team_id]), None)
+            else:
+                return self.teams[0]
+        return None
+
     def get_id(self):
         try:
             return unicode(self.id)  # python 2
@@ -78,7 +117,8 @@ class User():
             'supplierName': self.supplier_name,
             'locked': self.locked,
             'application_id': self.application_id,
-            'notificationCount': self.notification_count
+            'notificationCount': self.notification_count,
+            'teams': self.teams
         }
 
     @staticmethod
@@ -115,7 +155,8 @@ class User():
             role=user['role'],
             terms_accepted_at=terms_accepted_at,
             application_id=application_id,
-            notification_count=notification_count
+            notification_count=notification_count,
+            teams=user.get('teams', [])
         )
 
     @staticmethod

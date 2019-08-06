@@ -148,6 +148,294 @@ def test_User_has_any_role(user_json):
     assert not user.has_any_role('other', 'admin')
 
 
+def test_User_is_part_of_team():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "permissions": [],
+                "name": "team name",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert user.is_part_of_team()
+
+
+def test_User_is_not_part_of_team():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert not user.is_part_of_team()
+
+
+def test_User_has_permission():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": False,
+                "permissions": ['a'],
+                "name": "team name",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert user.has_permission('a')
+
+
+def test_User_has_no_permission():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": False,
+                "permissions": ['foo'],
+                "name": "team name",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert not user.has_permission('bar')
+
+
+def test_User_has_permission_when_team_lead():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": True,
+                "permissions": [],
+                "name": "team name",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert user.has_permission('bar')
+
+
+def test_when_user_is_part_of_one_team():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": True,
+                "permissions": [],
+                "name": "team name",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    team = user.get_team()
+    assert team['name'] == 'team name'
+
+
+def test_when_user_is_part_of_two_teams():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": True,
+                "permissions": [],
+                "name": "team name 1",
+            }, {
+                "is_team_lead": True,
+                "permissions": [],
+                "name": "team name 2",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    team = user.get_team()
+    assert team['name'] == 'team name 1'
+
+
+def test_when_user_is_part_of_two_teams_has_no_permissions():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": False,
+                "permissions": ['a'],
+                "name": "team name 1",
+            }, {
+                "is_team_lead": False,
+                "permissions": ['b'],
+                "name": "team name 2",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert not user.has_permission('a')
+
+
+def test_when_user_is_part_of_two_teams_has_no_permission_because_team_leads():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": True,
+                "permissions": ['a'],
+                "name": "team name 1",
+            }, {
+                "is_team_lead": False,
+                "permissions": ['b'],
+                "name": "team name 2",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert not user.has_permission('a')
+
+
+def test_when_user_is_part_of_two_teams_has_permission_because_team_leads():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": True,
+                "permissions": ['a'],
+                "name": "team name 1",
+            }, {
+                "is_team_lead": True,
+                "permissions": ['b'],
+                "name": "team name 2",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert user.has_permission('a')
+
+
+def test_when_user_is_part_of_two_teams_has_permissions():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "is_team_lead": False,
+                "permissions": ['a'],
+                "name": "team name 1",
+            }, {
+                "is_team_lead": False,
+                "permissions": ['a'],
+                "name": "team name 2",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert user.has_permission('a')
+
+
+def test_when_user_is_part_of_two_teams_has_permissions_when_team_id_is_given():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [{
+                "id": 1,
+                "is_team_lead": False,
+                "permissions": ['a'],
+                "name": "team name 1",
+            }, {
+                "id": 2,
+                "is_team_lead": False,
+                "permissions": ['b'],
+                "name": "team name 2",
+            }, {
+                "id": 3,
+                "is_team_lead": True,
+                "permissions": [],
+                "name": "team name 3",
+            }],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert user.has_permission('a', 1)
+    assert not user.has_permission('d', 1)
+    assert user.has_permission('b', 2)
+    assert not user.has_permission('d', 2)
+    assert user.has_permission('c', 3)
+
+
+def test_when_user_is_not_part_of_a_team():
+    user = User.from_json({
+        "users": {
+            "id": 123,
+            "emailAddress": "test@example.com",
+            "name": "name",
+            "role": "buyer",
+            "locked": False,
+            "active": True,
+            "teams": [],
+            'termsAcceptedAt': '2016-01-01T01:00:00.0Z',
+        }
+    })
+    assert user.get_team() is None
+
+
 def test_User_load_user(user_json):
     data_api_client = mock.Mock()
     data_api_client.get_user.return_value = user_json

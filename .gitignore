@@ -39,3 +39,4 @@ nosetests.xml
 .cache
 venv
 .vscode
+.pytest_cache
