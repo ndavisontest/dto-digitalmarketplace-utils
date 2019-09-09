@@ -27,7 +27,7 @@ def user_has_role(user, role):
 class User():
     def __init__(self, user_id, email_address, supplier_code, supplier_name,
                  locked, active, name, role, terms_accepted_at, application_id=None, frameworks=None,
-                 notification_count=None, teams=None):
+                 notification_count=None, teams=None, agency_id=None):
         self.id = user_id
         self.email_address = email_address
         self.name = name
@@ -41,6 +41,7 @@ class User():
         self.frameworks = frameworks
         self.notification_count = notification_count
         self.teams = teams if teams else []
+        self.agency_id = agency_id
 
     @property
     def is_authenticated(self):
@@ -118,7 +119,8 @@ class User():
             'locked': self.locked,
             'application_id': self.application_id,
             'notificationCount': self.notification_count,
-            'teams': self.teams
+            'teams': self.teams,
+            'agencyId': self.agency_id
         }
 
     @staticmethod
@@ -156,7 +158,8 @@ class User():
             terms_accepted_at=terms_accepted_at,
             application_id=application_id,
             notification_count=notification_count,
-            teams=user.get('teams', [])
+            teams=user.get('teams', []),
+            agency_id=user.get('agencyId')
         )
 
     @staticmethod
